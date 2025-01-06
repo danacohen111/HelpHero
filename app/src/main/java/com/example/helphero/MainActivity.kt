@@ -29,13 +29,11 @@ class MainActivity : AppCompatActivity() {
             // Basic validation (check if fields are empty)
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill out both fields", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Email: $email\nPassword: $password", Toast.LENGTH_LONG).show()
             }
         }
 
         signupButton.setOnClickListener {
-            Toast.makeText(this, "Sign Up button clicked", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 }

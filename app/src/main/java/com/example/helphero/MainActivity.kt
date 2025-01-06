@@ -1,26 +1,40 @@
 package com.example.helphero
 
-import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var emailField: EditText
+    private lateinit var passwordField: EditText
+    private lateinit var continueButton: Button
+    private lateinit var signupButton: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        btnLogin.setOnClickListener {
-            val username = etUsername.text.toString()
-            val password = etPassword.text.toString()
+        emailField = findViewById(R.id.emailField)
+        passwordField = findViewById(R.id.passwordField)
+        continueButton = findViewById(R.id.continueButton)
+        signupButton = findViewById(R.id.signupButton)
 
-            if (username == "admin" && password == "password") {
-                startActivity(Intent(this, SignOutActivity::class.java))
-                finish()
-            } else {
-                Toast.makeText(this, "Invalid Credentials", Toast.LENGTH_SHORT).show()
+        continueButton.setOnClickListener {
+            val email = emailField.text.toString().trim()
+            val password = passwordField.text.toString().trim()
+
+            // Basic validation (check if fields are empty)
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Please fill out both fields", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        signupButton.setOnClickListener {
+            finish()
         }
     }
 }
+

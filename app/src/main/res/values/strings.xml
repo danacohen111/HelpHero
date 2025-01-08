@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">HelpHero</string>
+    <string name="enter_name">Please enter your name</string>
+    <string name="enter_email">Please enter your email</string>
+    <string name="enter_password">Please enter your password</string>
+    <string name="enter_phone_number">Please enter your phone number</string>
 </resources>

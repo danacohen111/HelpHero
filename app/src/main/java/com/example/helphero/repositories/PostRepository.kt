@@ -3,7 +3,7 @@ package com.example.helphero.data.repositories
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.helphero.data.database.posts.PostDao
+import com.example.helphero.databases.posts.PostDao
 import com.example.helphero.models.FirestorePost
 import com.example.helphero.models.Post
 import com.example.helphero.models.toRoomPost

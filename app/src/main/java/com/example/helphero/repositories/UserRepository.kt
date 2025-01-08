@@ -7,9 +7,9 @@ import android.widget.ImageView
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.helphero.data.database.users.UserDao
-import com.example.helphero.data.models.FirestoreUser
-import com.example.helphero.data.models.User
+import com.example.helphero.databases.users.UserDao
+import com.example.helphero.models.FirestoreUser
+import com.example.helphero.models.User
 import com.example.helphero.util.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidUserException

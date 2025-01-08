@@ -1,4 +1,4 @@
-package com.example.herohelp.models
+package com.example.helphero.models
 
 data class Comment(
     val commentId: String,

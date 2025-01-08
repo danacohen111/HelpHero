@@ -1,4 +1,4 @@
-package com.example.herohelp.models
+package com.example.helphero.models
 
 data class User(
     val userId: String,

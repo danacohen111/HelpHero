@@ -21,7 +21,7 @@ abstract class CommentDatabase: RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     CommentDatabase::class.java,
-                    "comments_database"
+                    "comments"
                 ).build()
                 INSTANCE = instance
                 instance

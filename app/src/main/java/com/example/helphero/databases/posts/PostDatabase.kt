@@ -21,7 +21,7 @@ abstract class PostDatabase: RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     PostDatabase::class.java,
-                    "posts_database"
+                    "posts"
                 ).build()
                 INSTANCE = instance
                 instance

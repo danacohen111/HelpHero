@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "274485769349",
+    "project_id": "helphero-4abaa",
+    "storage_bucket": "helphero-4abaa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:274485769349:android:5d08569f7c222166de65ec",
+        "android_client_info": {
+          "package_name": "com.example.helphero"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0LJNfN8UgjbColZi48FRKRRKmHdXOPNk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

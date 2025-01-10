@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 
 class UserRepository (private val firestoreDb: FirebaseFirestore, private val firestoreAuth: FirebaseAuth, private val userDao: UserDao) {
 
-    private val TAG = "SignUpViewModel"
+    private val TAG = "UserRepository"
     private val COLLECTION = "users"
 
     private val _signUpSuccessfull = MutableLiveData<Boolean>()

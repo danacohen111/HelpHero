@@ -73,7 +73,7 @@ class ImageUtil private constructor() {
             }
         }
 
-        fun showImgInViewFromUrl(imageUri: String, imageView: ImageView, progressBar: ProgressBar) {
+    /*    fun showImgInViewFromUrl(imageUri: String, imageView: ImageView, progressBar: ProgressBar) {
             progressBar.visibility = ProgressBar.VISIBLE
 
             CoroutineScope(Dispatchers.Main).launch {
@@ -109,7 +109,7 @@ class ImageUtil private constructor() {
                 }
             }
         }
-
+*/
         suspend fun UploadImage(imageId: String, imageUri: Uri, storageRef: StorageReference): Uri? {
             val imageRef = storageRef.child(imageId)
 

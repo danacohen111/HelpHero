@@ -10,7 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.helphero.databases.users.UserDao
 import com.example.helphero.models.FirestoreUser
 import com.example.helphero.models.User
-import com.example.helphero.util.ImageUtil
+import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException

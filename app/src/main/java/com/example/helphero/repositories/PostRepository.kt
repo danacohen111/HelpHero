@@ -11,6 +11,7 @@ import com.example.helphero.models.Post
 import com.example.helphero.models.toFirestorePost
 import com.example.helphero.models.toRoomPost
 import com.example.helphero.utils.ImageUtil
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
@@ -18,6 +19,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -26,10 +28,9 @@ import kotlinx.coroutines.launch
 class PostRepository(private val firestoreDb: FirebaseFirestore, private val firebaseAuth: FirebaseAuth, private val postDao: PostDao) {
 
     private val TAG = "PostRepository"
-    private val firebaseDb: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val COLLECTION = "posts"
     private val storageRef: StorageReference = Firebase.storage.reference.child("posts")
 
-    private val COLLECTION = "posts"
     private var postsListenerRegistration: ListenerRegistration? = null
 
     private val _postsLiveData = MutableLiveData<List<Post>>()
@@ -58,13 +59,13 @@ class PostRepository(private val firestoreDb: FirebaseFirestore, private val fir
 
     @WorkerThread
     suspend fun insert(post: Post) {
-        Log.d(TAG, "Inserting post with id: ${post.id}")
+        Log.d(TAG, "Inserting post")
         postDao.insert(post)
     }
 
     @WorkerThread
     suspend fun delete(post: Post) {
-        Log.d(TAG, "Deleting post with id: ${post.id}")
+        Log.d(TAG, "Deleting post")
         postDao.delete(post)
     }
 
@@ -124,20 +125,20 @@ class PostRepository(private val firestoreDb: FirebaseFirestore, private val fir
         try {
             _postImage.value?.let { uri ->
                 CoroutineScope(Dispatchers.IO).launch {
-                    Log.d(TAG, "Inserting post with id: ${post.id}")
+                    Log.d(TAG, "Inserting post with id: ${post.postId}")
                     if (post.imageUrl.isEmpty()) {
-                        post.imageUrl = ImageUtil.UploadImage(post.id, uri, storageRef).toString()
-                        Log.d(TAG, "Image uploaded for post with id: ${post.id}")
+                        post.imageUrl = ImageUtil.UploadImage(post.postId, uri, storageRef).toString()
+                        Log.d(TAG, "Image uploaded for post with id: ${post.postId}")
                     }
                     val fsPost = post.toFirestorePost()
-                    firebaseDb.collection(COLLECTION).document(post.id).set(fsPost)
-                    Log.d(TAG, "Post inserted with id: ${post.id}")
+                    firestoreDb.collection(COLLECTION).document(post.postId).set(fsPost)
+                    Log.d(TAG, "Post inserted with id: ${post.postId}")
                 }
             }
         } finally {
             _postSuccessful.postValue(true)
             _loading.postValue(false)
-            Log.d(TAG, "Post insertion completed for id: ${post.id}")
+            Log.d(TAG, "Post insertion completed for id: ${post.postId}")
         }
     }
 
@@ -145,7 +146,7 @@ class PostRepository(private val firestoreDb: FirebaseFirestore, private val fir
         Log.d(TAG, "Deleting post with id: $id")
         ImageUtil.deleteStorageImage(id, storageRef)
             .addOnSuccessListener {
-                firebaseDb.collection(COLLECTION).document(id).delete()
+                firestoreDb.collection(COLLECTION).document(id).delete()
                     .addOnFailureListener {
                         Log.e(TAG, "Could not delete post with id: $id", it)
                         throw(Exception("Could not delete post"))
@@ -153,7 +154,7 @@ class PostRepository(private val firestoreDb: FirebaseFirestore, private val fir
                 Log.d(TAG, "Post deleted with id: $id")
             }
             .addOnFailureListener {
-                Log.e(TAG, "Could not delete image from storage for post with id: $id", it)
+                Log.e(TAG, "Could not delete image from storage for post with id: $id")
                 throw(Exception("Could not delete image from storage"))
             }
     }

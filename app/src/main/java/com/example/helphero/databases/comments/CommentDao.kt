@@ -20,6 +20,9 @@ interface CommentDao {
     @Query("SELECT * FROM comments WHERE userId = :userId")
     fun getUserComments(userId: String): Flow<List<Comment>>
 
+    @Query("SELECT * FROM comments WHERE postId = :postId ORDER BY commentId DESC")
+    fun getPostComments(postId: String): Flow<List<Comment>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(comment: Comment)
 

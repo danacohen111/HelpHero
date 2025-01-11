@@ -1,6 +1,12 @@
 package com.example.helphero.ui.addPost
 
-class addPostFragment {
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import com.example.helphero.R
 
-    // for menu check only
+class AddPostFragment : Fragment(R.layout.fragment_add_post) {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // TODO: Implement the ViewModel and the logic for the addPostFragment
+    }
 }

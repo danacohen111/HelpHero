@@ -53,7 +53,7 @@
 
     <fragment
         android:id="@+id/addPostFragment"
-        android:name="com.example.helphero.ui.addPost.addPostFragment"
+        android:name="com.example.helphero.ui.addPost.AddPostFragment"
         android:label="Add Post"
         tools:layout="@layout/fragment_add_post">
         <action

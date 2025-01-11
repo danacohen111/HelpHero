@@ -6,16 +6,19 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import com.example.helphero.R
+import androidx.navigation.ui.NavigationUI
+import com.example.helphero.databinding.ActivityMainBinding
 import com.google.android.material.appbar.MaterialToolbar
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Get the NavController
         val navHostFragment =
@@ -23,8 +26,11 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
         // Reference the MaterialToolbar from app_bar.xml (via include in activity_main.xml)
-        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        val toolbar = binding.toolbar
         setSupportActionBar(toolbar)
+
+        // Set up the toolbar with NavController
+        NavigationUI.setupWithNavController(toolbar, navController)
 
         // Optional: Handle navigation on the toolbar if required
         toolbar.setNavigationOnClickListener {
@@ -38,12 +44,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        // Inflate the menu into the toolbar
         menuInflater.inflate(R.menu.menu_top_navigation, menu)
-
-        // Set the homeFragment menu item as checked by default
-        menu?.findItem(R.id.homeFragment)?.isChecked = true
-
         return true
     }
 
@@ -85,7 +86,7 @@ class MainActivity : AppCompatActivity() {
      * Handle the state of the selected menu item.
      */
     private fun handleMenuItemState(selectedItem: MenuItem) {
-        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        val toolbar = binding.toolbar
         val menu = toolbar.menu
 
         // Reset all menu items

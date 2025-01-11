@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/signInFragment"
-        android:name="com.yourpackage.ui.signin.SignInFragment"
+        android:name="com.example.helphero.ui.signin.SignInFragment"
         android:label="Sign In"
         tools:layout="@layout/fragment_signin">
         <action
@@ -20,7 +20,7 @@
 
     <fragment
         android:id="@+id/signUpFragment"
-        android:name="com.yourpackage.ui.signup.SignUpFragment"
+        android:name="com.example.helphero.ui.signup.SignUpFragment"
         android:label="Sign Up"
         tools:layout="@layout/fragment_signup">
         <action
@@ -30,7 +30,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.yourpackage.ui.home.HomeFragment"
+        android:name="com.example.helphero.ui.home.HomeFragment"
         android:label="Home"
         tools:layout="@layout/fragment_home">
         <action
@@ -43,7 +43,7 @@
 
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.yourpackage.ui.profile.ProfileFragment"
+        android:name="com.example.helphero.ui.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
         <action
@@ -53,7 +53,7 @@
 
     <fragment
         android:id="@+id/addPostFragment"
-        android:name="com.yourpackage.ui.addpost.AddPostFragment"
+        android:name="com.example.helphero.ui.addPost.addPostFragment"
         android:label="Add Post"
         tools:layout="@layout/fragment_add_post">
         <action

@@ -23,21 +23,18 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get the NavController
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
-        // Reference the MaterialToolbar from app_bar.xml (via include in activity_main.xml)
         val toolbar = binding.toolbar
         setSupportActionBar(toolbar)
         toolbar.setTitle("")
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        // Set up the toolbar with NavController
         NavigationUI.setupWithNavController(toolbar, navController)
 
-        isLoggedin()
+       isLoggedin()
 
         if (isLoggedIn) {
             navController.navigate(R.id.homeFragment)

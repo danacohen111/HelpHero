@@ -16,4 +16,8 @@
         android:id="@+id/addPostFragment"
         android:name="com.example.helphero.ui.addPost.AddPostFragment"
         tools:layout="@layout/fragment_add_post" />
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="com.example.helphero.ui.signin.SignInFragment"
+        tools:layout="@layout/fragment_signin" />
 </navigation>

@@ -7,37 +7,32 @@
         android:title="applogo"
         android:enabled="false"
         app:showAsAction="always|withText"
-        android:layout_width="0dp"
-        android:layout_weight="1" />
+        android:layout_gravity="center" />
 
     <item
         android:id="@+id/homeFragment"
         android:icon="@drawable/home"
         android:title="@string/home"
         app:showAsAction="always|withText"
-        android:layout_width="0dp"
-        android:layout_weight="1" />
+        android:layout_gravity="center" />
 
     <item
         android:id="@+id/profileFragment"
         android:icon="@drawable/profile"
         android:title="@string/profile"
         app:showAsAction="always|withText"
-        android:layout_width="0dp"
-        android:layout_weight="1" />
+        android:layout_gravity="center" />
 
     <item
         android:id="@+id/addPostFragment"
         android:icon="@drawable/addpost"
         android:title="@string/addpost"
         app:showAsAction="always|withText"
-        android:layout_width="0dp"
-        android:layout_weight="1" />
+        android:layout_gravity="center" />
 
     <item
         android:id="@+id/israel_menu"
-        android:layout_width="0dp"
-        android:layout_weight="1"
+        android:layout_gravity="center"
         android:enabled="false"
         android:icon="@drawable/israel"
         android:title="israel"

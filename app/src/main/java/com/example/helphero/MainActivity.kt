@@ -1,4 +1,4 @@
-package com.yourpackage
+package com.example.helphero
 
 import android.net.Uri
 import android.os.Bundle
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
                     userId = firebaseAuth.currentUser?.uid ?: "",
                     imageUrl = "",
                     date = "2023-10-10",
-                    comments = emptyList()
+                    comments = mutableListOf()
                 )
                 postRepository.insertPost(newPost)
 

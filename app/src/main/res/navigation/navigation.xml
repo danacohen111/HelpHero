@@ -1,64 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<navigation
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/signInFragment">
-
-    <fragment
-        android:id="@+id/signInFragment"
-        android:name="com.example.helphero.ui.signin.SignInFragment"
-        android:label="Sign In"
-        tools:layout="@layout/fragment_signin">
-        <action
-            android:id="@+id/action_signInFragment_to_signUpFragment"
-            app:destination="@id/signUpFragment" />
-        <action
-            android:id="@+id/action_signInFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/signUpFragment"
-        android:name="com.example.helphero.ui.signup.SignUpFragment"
-        android:label="Sign Up"
-        tools:layout="@layout/fragment_signup">
-        <action
-            android:id="@+id/action_signUpFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
-    </fragment>
+    app:startDestination="@id/homeFragment">
 
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.helphero.ui.home.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home">
-        <action
-            android:id="@+id/action_homeFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
-        <action
-            android:id="@+id/action_homeFragment_to_addPostFragment"
-            app:destination="@id/addPostFragment" />
-    </fragment>
-
+        tools:layout="@layout/fragment_home" />
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.helphero.ui.profile.ProfileFragment"
-        android:label="Profile"
-        tools:layout="@layout/fragment_profile">
-        <action
-            android:id="@+id/action_profileFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
-    </fragment>
-
+        tools:layout="@layout/fragment_profile" />
     <fragment
         android:id="@+id/addPostFragment"
         android:name="com.example.helphero.ui.addPost.AddPostFragment"
-        android:label="Add Post"
-        tools:layout="@layout/fragment_add_post">
-        <action
-            android:id="@+id/action_addPostFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
-    </fragment>
-
+        tools:layout="@layout/fragment_add_post" />
 </navigation>

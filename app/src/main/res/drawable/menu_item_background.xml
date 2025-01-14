@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Selected state: apply an underline -->
-    <item android:state_selected="true" android:drawable="@drawable/underline_selected" />
-    <!-- Default state: no underline -->
-    <item android:drawable="@android:color/transparent" />
-</selector>

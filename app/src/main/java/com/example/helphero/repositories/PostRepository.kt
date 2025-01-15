@@ -18,14 +18,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.ktx.storage
 import com.google.firebase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-class PostRepository(private val firestoreDb: FirebaseFirestore, private val firebaseAuth: FirebaseAuth, private val postDao: PostDao) {
+class PostRepository(
+    private val firestoreDb: FirebaseFirestore,
+    private val firebaseAuth: FirebaseAuth,
+    private val postDao: PostDao
+) {
 
     private val TAG = "PostRepository"
     private val COLLECTION = "posts"
@@ -52,7 +54,7 @@ class PostRepository(private val firestoreDb: FirebaseFirestore, private val fir
     }
 
     @WorkerThread
-    fun getUserPosts(userId: String): Flow<List<Post>> {
+    fun getUserPosts(userId: String): List<Post> {
         Log.d(TAG, "Fetching posts for user with id: $userId")
         return postDao.getUserPosts(userId)
     }
@@ -75,27 +77,29 @@ class PostRepository(private val firestoreDb: FirebaseFirestore, private val fir
 
     private fun listenForPostUpdates() {
         Log.d(TAG, "Listening for post updates")
-        postsListenerRegistration = firestoreDb.collection(COLLECTION).orderBy("createdString", Query.Direction.DESCENDING).addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                Log.e(TAG, "Error listening for post updates", error)
-                return@addSnapshotListener
-            }
+        postsListenerRegistration =
+            firestoreDb.collection(COLLECTION).orderBy("createdString", Query.Direction.DESCENDING)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.e(TAG, "Error listening for post updates", error)
+                        return@addSnapshotListener
+                    }
 
-            CoroutineScope(Dispatchers.IO).launch {
-                val posts = mutableListOf<Post>()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val posts = mutableListOf<Post>()
 
-                snapshot?.documents?.forEach { document ->
-                    val firestorePost = document.toObject(FirestorePost::class.java)
-                    firestorePost?.let { fsPost ->
-                        val post = fsPost.toRoomPost(document.id)
-                        insert(post)
-                        posts.add(post)
+                        snapshot?.documents?.forEach { document ->
+                            val firestorePost = document.toObject(FirestorePost::class.java)
+                            firestorePost?.let { fsPost ->
+                                val post = fsPost.toRoomPost(document.id)
+                                insert(post)
+                                posts.add(post)
+                            }
+                        }
+                        _postsLiveData.postValue(posts)
+                        Log.d(TAG, "Post updates received: ${posts.size} posts")
                     }
                 }
-                _postsLiveData.postValue(posts)
-                Log.d(TAG, "Post updates received: ${posts.size} posts")
-            }
-        }
 
         firestoreDb.collection(COLLECTION)
             .addSnapshotListener { snapshot, error ->
@@ -127,7 +131,8 @@ class PostRepository(private val firestoreDb: FirebaseFirestore, private val fir
                 CoroutineScope(Dispatchers.IO).launch {
                     Log.d(TAG, "Inserting post with id: ${post.postId}")
                     if (post.imageUrl.isEmpty()) {
-                        post.imageUrl = ImageUtil.UploadImage(post.postId, uri, storageRef).toString()
+                        post.imageUrl =
+                            ImageUtil.UploadImage(post.postId, uri, storageRef).toString()
                         Log.d(TAG, "Image uploaded for post with id: ${post.postId}")
                     }
                     val fsPost = post.toFirestorePost()
@@ -149,13 +154,13 @@ class PostRepository(private val firestoreDb: FirebaseFirestore, private val fir
                 firestoreDb.collection(COLLECTION).document(id).delete()
                     .addOnFailureListener {
                         Log.e(TAG, "Could not delete post with id: $id", it)
-                        throw(Exception("Could not delete post"))
+                        throw (Exception("Could not delete post"))
                     }
                 Log.d(TAG, "Post deleted with id: $id")
             }
             .addOnFailureListener {
                 Log.e(TAG, "Could not delete image from storage for post with id: $id")
-                throw(Exception("Could not delete image from storage"))
+                throw (Exception("Could not delete image from storage"))
             }
     }
 }

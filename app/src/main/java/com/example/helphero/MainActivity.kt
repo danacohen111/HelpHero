@@ -1,6 +1,5 @@
 package com.example.helphero
 
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -8,17 +7,18 @@ import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
-import com.example.helphero.R
 import com.example.helphero.data.repositories.PostRepository
 import com.example.helphero.data.repositories.UserRepository
-import com.example.helphero.databases.users.UserDatabase
 import com.example.helphero.databases.posts.PostDatabase
+import com.example.helphero.databases.users.UserDatabase
 import com.example.helphero.models.FirestoreUser
 import com.example.helphero.models.Post
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,14 +28,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+        val storage = FirebaseStorage.getInstance()
+        val storageReference = storage.reference
         setContentView(R.layout.activity_main)
 
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
-
-        val topAppBar = findViewById<MaterialToolbar>(R.id.topAppBar)
-        NavigationUI.setupWithNavController(topAppBar, navController)
+//        val navHostFragment =
+//            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+//        navController = navHostFragment.navController
+//
+//        val topAppBar = findViewById<MaterialToolbar>(R.id.topAppBar)
+//        NavigationUI.setupWithNavController(topAppBar, navController)
 
         // Initialize Firebase
         val firestoreDb = FirebaseFirestore.getInstance()
@@ -51,7 +54,10 @@ class MainActivity : AppCompatActivity() {
         // TODO: Delete when done testing
         // Create a new user
         val newUser = FirestoreUser("testuser@example.com", "password123", "Test User")
-        userRepository.createUser(newUser, storageRef.child("profile_images/testuser.jpg")) { error ->
+        userRepository.createUser(
+            newUser,
+            storageRef.child("profile_images/testuser.jpg")
+        ) { error ->
             Log.e("MainActivity", "Error creating user: $error")
         }
 

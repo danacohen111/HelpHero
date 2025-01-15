@@ -16,7 +16,6 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class CommentRepository(private val firestoreDb: FirebaseFirestore, private val firebaseAuth: FirebaseAuth, private val commentDao: CommentDao) {
@@ -43,7 +42,7 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
     }
 
     @WorkerThread
-    fun getPostComments(postId: String): Flow<List<Comment>> {
+    fun getPostComments(postId: String): List<Comment> {
         Log.d(TAG, "Fetching comments for post with id: $postId")
         return commentDao.getPostComments(postId)
     }

@@ -5,15 +5,12 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.NavigationUI
 import com.example.helphero.data.repositories.PostRepository
 import com.example.helphero.data.repositories.UserRepository
 import com.example.helphero.databases.posts.PostDatabase
 import com.example.helphero.databases.users.UserDatabase
 import com.example.helphero.models.FirestoreUser
 import com.example.helphero.models.Post
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -25,13 +22,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
     private lateinit var userRepository: UserRepository
     private lateinit var postRepository: PostRepository
+    val TAG: String = "FirebaseTest"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
         FirebaseApp.initializeApp(this)
         val storage = FirebaseStorage.getInstance()
         val storageReference = storage.reference
-        setContentView(R.layout.activity_main)
+
+        if (FirebaseApp.getApps(this).isEmpty()) {
+            Log.e(TAG, "Firebase not initialized!");
+        } else {
+            Log.d(TAG, "Firebase successfully initialized!");
+        }
 
 //        val navHostFragment =
 //            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment

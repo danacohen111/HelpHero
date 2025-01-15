@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    kotlin("kapt")
 }
 
 android {
@@ -89,4 +90,6 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("androidx.room:room-runtime:2.5.0")
+    kapt("androidx.room:room-compiler:2.5.0")
+
 }

@@ -7,7 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.helphero.models.Post
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PostDao {
@@ -18,14 +17,14 @@ interface PostDao {
     fun get(id: Int): Post
 
     @Query("SELECT * FROM posts WHERE userId = :userId")
-    fun getUserPosts(userId: String): Flow<List<Post>>
+    fun getUserPosts(userId: String): List<Post>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(post: Post)
+    fun insert(post: Post)
 
     @Update
-    suspend fun update(post: Post)
+    fun update(post: Post)
 
     @Delete
-    suspend fun delete(post: Post)
+    fun delete(post: Post)
 }

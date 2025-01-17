@@ -1,7 +1,6 @@
 package com.example.helphero
 
 import android.os.Bundle
-import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -18,14 +17,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private var isLoggedIn: Boolean = false
+    private var isLoggedIn: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        bottomNavigationView = binding.toolbar
+        bottomNavigationView = binding.bottomNavigationView
         navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
@@ -33,26 +32,16 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         NavigationUI.setupWithNavController(bottomNavigationView, navController)
-        isLoggedin()
+        bottomNavigationView.inflateMenu(R.menu.menu_bottom_navigation)
+        //isLoggedin()
 
         if (isLoggedIn) {
             navController.navigate(R.id.homeFragment)
+            bottomNavigationView.visibility = BottomNavigationView.VISIBLE
         } else {
             navController.navigate(R.id.signInFragment)
+            bottomNavigationView.visibility = BottomNavigationView.GONE
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_bottom_navigation, menu)
-        return true
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        super.onPrepareOptionsMenu(menu)
-        menu?.findItem(R.id.homeFragment)?.isVisible = isLoggedIn
-        menu?.findItem(R.id.profileFragment)?.isVisible = isLoggedIn
-        menu?.findItem(R.id.addPostFragment)?.isVisible = isLoggedIn
-        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -73,6 +62,5 @@ class MainActivity : AppCompatActivity() {
 
     fun isLoggedin() {
         isLoggedIn = auth.currentUser != null
-        invalidateOptionsMenu()
     }
 }

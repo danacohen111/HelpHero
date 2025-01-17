@@ -16,6 +16,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -66,6 +67,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
+    implementation ("androidx.multidex:multidex:2.0.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:3.11.2")
     testImplementation("org.mockito:mockito-inline:3.11.2")

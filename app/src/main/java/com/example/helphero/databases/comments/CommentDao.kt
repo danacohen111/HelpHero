@@ -23,11 +23,11 @@ interface CommentDao {
     fun getPostComments(postId: String): List<Comment>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(comment: Comment)
+    fun insert(comment: Comment)
 
     @Update
-    suspend fun update(comment: Comment)
+    fun update(comment: Comment)
 
     @Delete
-    suspend fun delete(comment: Comment)
+    fun delete(comment: Comment)
 }

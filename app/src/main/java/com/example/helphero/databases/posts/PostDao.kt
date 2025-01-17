@@ -20,11 +20,11 @@ interface PostDao {
     fun getUserPosts(userId: String): List<Post>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(post: Post)
+    fun insert(post: Post)
 
     @Update
-    suspend fun update(post: Post)
+    fun update(post: Post)
 
     @Delete
-    suspend fun delete(post: Post)
+    fun delete(post: Post)
 }

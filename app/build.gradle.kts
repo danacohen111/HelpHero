@@ -90,6 +90,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("androidx.room:room-runtime:2.5.0")
+    implementation ("com.google.code.gson:gson:2.8.9")
     kapt("androidx.room:room-compiler:2.5.0")
 
 }

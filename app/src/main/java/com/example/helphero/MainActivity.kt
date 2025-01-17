@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: Delete when done testing
         // Create a new user
-        val newUser = FirestoreUser("testuser@example.com", "password123", "Test User")
+        val newUser = FirestoreUser("Test User", "0509166456", "Test photo", "testuser@example.com", "password")
         userRepository.createUser(
             newUser,
             storageRef.child("profile_images/testuser.jpg")

@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private var isLoggedIn: Boolean = true
+    private var isLoggedIn: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         NavigationUI.setupWithNavController(bottomNavigationView, navController)
+        isLoggedin()
 
         if (isLoggedIn) {
             navController.navigate(R.id.homeFragment)
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_bottom_navigation, menu)
         return true
     }
 
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun isLoggedin() {
-        invalidateOptionsMenu()
         isLoggedIn = auth.currentUser != null
+        invalidateOptionsMenu()
     }
 }

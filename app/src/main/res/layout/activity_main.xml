@@ -25,7 +25,6 @@
         app:itemIconSize="48dp"
         app:itemIconTint="@color/colorTextSecondary"
         app:itemTextColor="@android:color/transparent"
-        app:itemBackground="@drawable/bottom_nav_item_background"
-        app:menu="@menu/menu_bottom_navigation"/>
+        app:itemBackground="@drawable/bottom_nav_item_background"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

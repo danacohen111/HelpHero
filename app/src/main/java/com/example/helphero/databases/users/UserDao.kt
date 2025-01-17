@@ -11,7 +11,7 @@ interface UserDao {
     fun get(email: String): User
 
     @Update
-    suspend fun update(post: User)
+    fun update(user: User)
 
 //    @Delete
 //    fun delete(id: String)

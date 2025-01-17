@@ -7,7 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.helphero.models.Comment
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CommentDao {
@@ -18,14 +17,17 @@ interface CommentDao {
     fun get(id: String): Comment
 
     @Query("SELECT * FROM comments WHERE userId = :userId")
-    fun getUserComments(userId: String): Flow<List<Comment>>
+    fun getUserComments(userId: String): List<Comment>
+
+    @Query("SELECT * FROM comments WHERE postId = :postId ORDER BY commentId DESC")
+    fun getPostComments(postId: String): List<Comment>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(comment: Comment)
+    fun insert(comment: Comment)
 
     @Update
-    suspend fun update(comment: Comment)
+    fun update(comment: Comment)
 
     @Delete
-    suspend fun delete(comment: Comment)
+    fun delete(comment: Comment)
 }

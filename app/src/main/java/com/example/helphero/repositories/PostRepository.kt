@@ -1,4 +1,4 @@
-package com.example.helphero.data.repositories
+package com.example.helphero.repositories
 
 import android.net.Uri
 import android.util.Log
@@ -132,7 +132,7 @@ class PostRepository(
                     Log.d(TAG, "Inserting post with id: ${post.postId}")
                     if (post.imageUrl.isEmpty()) {
                         post.imageUrl =
-                            ImageUtil.UploadImage(post.postId, uri, storageRef).toString()
+                            ImageUtil.uploadImage(post.postId, uri, storageRef).toString()
                         Log.d(TAG, "Image uploaded for post with id: ${post.postId}")
                     }
                     val fsPost = post.toFirestorePost()

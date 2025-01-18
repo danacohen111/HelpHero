@@ -1,4 +1,4 @@
-package com.example.helphero.data.repositories
+package com.example.helphero.repositories
 
 import android.util.Log
 import androidx.annotation.WorkerThread

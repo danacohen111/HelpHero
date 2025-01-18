@@ -1,40 +1,69 @@
 package com.example.helphero
 
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
+import com.example.helphero.databinding.ActivityMainBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var emailField: EditText
-    private lateinit var passwordField: EditText
-    private lateinit var continueButton: Button
-    private lateinit var signupButton: Button
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var navHostFragment: NavHostFragment
+    private lateinit var navController: NavController
+    private lateinit var binding: ActivityMainBinding
+    private var auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private var isLoggedIn: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        emailField = findViewById(R.id.emailField)
-        passwordField = findViewById(R.id.passwordField)
-        continueButton = findViewById(R.id.continueButton)
-        signupButton = findViewById(R.id.signupButton)
+        bottomNavigationView = binding.bottomNavigationView
+        navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
 
-        continueButton.setOnClickListener {
-            val email = emailField.text.toString().trim()
-            val password = passwordField.text.toString().trim()
+        supportActionBar?.hide()
 
-            // Basic validation (check if fields are empty)
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill out both fields", Toast.LENGTH_SHORT).show()
-            }
-        }
+        NavigationUI.setupWithNavController(bottomNavigationView, navController)
+        bottomNavigationView.inflateMenu(R.menu.menu_bottom_navigation)
+        //isLoggedin()
 
-        signupButton.setOnClickListener {
-            finish()
+        if (isLoggedIn) {
+            navController.navigate(R.id.homeFragment)
+            bottomNavigationView.visibility = BottomNavigationView.VISIBLE
+        } else {
+            navController.navigate(R.id.signInFragment)
+            bottomNavigationView.visibility = BottomNavigationView.GONE
         }
     }
-}
 
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.homeFragment -> {
+            navController.navigate(R.id.homeFragment)
+            true
+        }
+
+        R.id.profileFragment -> {
+            navController.navigate(R.id.profileFragment)
+            true
+        }
+
+        R.id.addPostFragment -> {
+            navController.navigate(R.id.addPostFragment)
+            true
+        }
+
+        else -> super.onOptionsItemSelected(item)
+    }
+
+    fun isLoggedin() {
+        isLoggedIn = auth.currentUser != null
+    }
+}

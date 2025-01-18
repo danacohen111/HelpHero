@@ -54,7 +54,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation("androidx.databinding:databinding-runtime:8.7.2")
-    implementation(libs.firebase.auth.ktx) // Corrected dependency
+    implementation(libs.firebase.auth.ktx)implementation() // Corrected dependency
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

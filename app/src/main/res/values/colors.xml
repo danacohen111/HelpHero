@@ -12,4 +12,7 @@
     <!-- Button Colors -->
     <color name="colorButton">#52A9E0</color> <!-- Standard Button Blue -->
     <color name="colorButtonPressed">#5691DE</color> <!-- Pressed Button Blue -->
+
+    <color name="menuTextColor">#03A9F4</color> <!-- Menu Text Color -->
+    <color name="fadedMenuTextColor">#768B92</color> <!--Faded Menu Text Color -->
 </resources>

@@ -40,8 +40,8 @@ android {
     buildFeatures {
         compose = true
         dataBinding = true
+        viewBinding = true
     }
-
 }
 
 dependencies {
@@ -65,7 +65,8 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
-    implementation(libs.firebase.storage.ktx)
+    implementation(libs.filament.android)
+    implementation(libs.androidx.media3.common.ktx)
     testImplementation(libs.junit)
     implementation ("androidx.multidex:multidex:2.0.1")
     testImplementation("junit:junit:4.13.2")

@@ -11,14 +11,14 @@ import com.example.helphero.models.Post
 import com.example.helphero.models.toFirestorePost
 import com.example.helphero.models.toRoomPost
 import com.example.helphero.utils.ImageUtil
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.storage
+import com.google.firebase.storage.ktx.storage
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,9 +40,6 @@ class PostRepository(
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> get() = _loading
-
-    private val _postImage = MutableLiveData<Uri>()
-    val postImage: LiveData<Uri> get() = _postImage
 
     private val _postSuccessful = MutableLiveData<Boolean>()
     val postSuccessful: LiveData<Boolean> get() = _postSuccessful
@@ -124,26 +121,33 @@ class PostRepository(
             }
     }
 
-    fun insertPost(post: Post) {
+    fun insertPost(post: Post, imageUri: Uri) {
         _loading.postValue(true)
-        try {
-            _postImage.value?.let { uri ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    Log.d(TAG, "Inserting post with id: ${post.postId}")
-                    if (post.imageUrl.isEmpty()) {
-                        post.imageUrl =
-                            ImageUtil.uploadImage(post.postId, uri, storageRef).toString()
-                        Log.d(TAG, "Image uploaded for post with id: ${post.postId}")
-                    }
-                    val fsPost = post.toFirestorePost()
-                    firestoreDb.collection(COLLECTION).document(post.postId).set(fsPost)
-                    Log.d(TAG, "Post inserted with id: ${post.postId}")
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.d(TAG, "Inserting post with id: ${post.postId}")
+                if (post.imageUrl.isEmpty()) {
+                    val imageUrl = ImageUtil.uploadImage(post.postId, imageUri, storageRef).toString()
+                    post.imageUrl = imageUrl
+                    Log.d(TAG, "Image uploaded for post with id: ${post.postId}")
                 }
+                val fsPost = post.toFirestorePost()
+                firestoreDb.collection(COLLECTION).document(post.postId).set(fsPost)
+                    .addOnSuccessListener {
+                        Log.d(TAG, "Post inserted with id: ${post.postId}")
+                        _postSuccessful.postValue(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Error inserting post with id: ${post.postId}", e)
+                        _postSuccessful.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception during post insertion", e)
+                _postSuccessful.postValue(false)
+            } finally {
+                _loading.postValue(false)
+                Log.d(TAG, "Post insertion completed for id: ${post.postId}")
             }
-        } finally {
-            _postSuccessful.postValue(true)
-            _loading.postValue(false)
-            Log.d(TAG, "Post insertion completed for id: ${post.postId}")
         }
     }
 

@@ -30,7 +30,8 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
         _imageUri.value = uri
     }
 
-    fun savePost(title: String, desc: String, uri: Uri) {
+    // TO DO: Check the authenticated user and save the post
+    fun savePost(title: String, desc: String, imageUri: Uri) {
         val postId: String = UUID.randomUUID().toString()
         val userId = "anonymous" // Use a default or anonymous user ID
 
@@ -45,7 +46,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
                     date = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ENGLISH).format(Date()),
                     comments = emptyList()
                 )
-                repository.insertPost(post)
+                repository.insertPost(post, imageUri)
                 withContext(Dispatchers.Main) {
                     _postSuccessful.value = true
                 }

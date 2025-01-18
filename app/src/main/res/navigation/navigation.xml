@@ -3,10 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/signInFragment">
+    app:startDestination="@id/add">
 
     <fragment
         android:id="@+id/signInFragment"
+        android:name="com.example.helphero.ui.signin.SignInFragment"
+        android:label="Sign In"
+        tools:layout="@layout/fragment_signin" />
+    <fragment
+        android:id="@+id/addPostFragment"
         android:name="com.example.helphero.ui.signin.SignInFragment"
         android:label="Sign In"
         tools:layout="@layout/fragment_signin" />

@@ -77,7 +77,7 @@ class PostRepository(
     private fun listenForPostUpdates() {
         Log.d(TAG, "Listening for post updates")
         postsListenerRegistration =
-            firestoreDb.collection(COLLECTION).orderBy("createdString", Query.Direction.DESCENDING)
+            firestoreDb.collection(COLLECTION).orderBy("date", Query.Direction.DESCENDING)
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
                         Log.e(TAG, "Error listening for post updates", error)
@@ -94,15 +94,20 @@ class PostRepository(
                             val deletedPosts = mutableListOf<Post>()
 
                             snapshot.documentChanges.forEach { change ->
+                                Log.d(TAG, "Processing document change: ${change.document.id}")
                                 val firestorePost = change.document.toObject(FirestorePost::class.java)
+                                Log.d(TAG, "Converted Firestore document to FirestorePost: $firestorePost")
                                 firestorePost?.let { fsPost ->
                                     val post = fsPost.toRoomPost(change.document.id)
+                                    Log.d(TAG, "Converted FirestorePost to Room Post: $post")
                                     when (change.type) {
                                         DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
+                                            Log.d(TAG, "Inserting or updating post: ${post.postId}")
                                             insert(post)
                                             posts.add(post)
                                         }
                                         DocumentChange.Type.REMOVED -> {
+                                            Log.d(TAG, "Deleting post: ${post.postId}")
                                             delete(post)
                                             deletedPosts.add(post)
                                         }

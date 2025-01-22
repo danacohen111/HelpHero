@@ -129,6 +129,7 @@ class PostRepository(
             try {
                 Log.d(TAG, "Inserting post with id: ${post.postId}")
                 if (post.imageUrl.isEmpty()) {
+                    //TO DO: upload the image once the storage is initiallized
                     //val imageUrl = ImageUtil.uploadImage(post.postId, imageUri, storageRef, contentResolver).toString()
                     post.imageUrl = "hi"
                     Log.d(TAG, "Image uploaded for post with id: ${post.postId}")

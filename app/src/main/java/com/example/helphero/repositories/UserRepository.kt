@@ -1,4 +1,4 @@
-package com.example.helphero.data.repositories
+package com.example.helphero.repositories
 
 import android.content.ContentResolver
 import android.net.Uri
@@ -25,7 +25,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class UserRepository (private val firestoreDb: FirebaseFirestore, private val firestoreAuth: FirebaseAuth, private val userDao: UserDao) {
+class UserRepository(
+    private val firestoreDb: FirebaseFirestore,
+    private val firestoreAuth: FirebaseAuth,
+    private val userDao: UserDao,
+    private val contentResolver: ContentResolver
+) {
 
     private val TAG = "UserRepository"
     private val COLLECTION = "users"
@@ -53,39 +58,30 @@ class UserRepository (private val firestoreDb: FirebaseFirestore, private val fi
 
     private val _updateSuccessfull = MutableLiveData<Boolean>()
     val updateSuccessfull: LiveData<Boolean> = _updateSuccessfull
-    
-    @WorkerThread
-    fun get (id: String): User = userDao.get(id)
 
-    fun createUser(newUser: FirestoreUser, profileImageRef: StorageReference, errorCallback: (String) -> Unit ) {
+    @WorkerThread
+    fun get(id: String): User = userDao.get(id)
+
+    fun createUser(newUser: FirestoreUser, profileImageRef: StorageReference, errorCallback: (String) -> Unit) {
         _loading.value = true
         firestoreAuth.createUserWithEmailAndPassword(newUser.email, newUser.password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // get user created from firebase auth
                     val user = firestoreAuth.currentUser
                     user?.let {
-                        // if the user has uploaded an image
                         _ImageToShow.value?.let { uri ->
-                            // asynchronous operation to upload image and creating user
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
-                                    // upload image to firebase storage
-                                    val uri = ImageUtil.UploadImage(firestoreAuth.currentUser?.uid ?: "", uri, profileImageRef)
-                                    // if download url is not empty the upload was successful
+                                    val uri = ImageUtil.uploadImage(firestoreAuth.currentUser?.uid ?: "", uri, profileImageRef, contentResolver)
                                     if (uri != null) {
-                                        // update the new user with the name and image url
                                         val profileUpdates = userProfileChangeRequest {
                                             displayName = newUser.name
                                             photoUri = uri
                                         }
-                                        // when the update is done
                                         it.updateProfile(profileUpdates)
                                             .addOnCompleteListener { profileUpdateTask ->
                                                 if (profileUpdateTask.isSuccessful) {
                                                     Log.d(TAG, "User profile updated.")
-
-                                                    // save all the data in firestore db
                                                     val updatedUser = firestoreAuth.currentUser
                                                     try {
                                                         updatedUser?.let { user ->
@@ -99,17 +95,12 @@ class UserRepository (private val firestoreDb: FirebaseFirestore, private val fi
                                                     } finally {
                                                         _signUpSuccessfull.value = true
                                                     }
-
                                                 } else {
-                                                    Log.d(
-                                                        TAG,
-                                                        "There was an error updating the user profile"
-                                                    )
+                                                    Log.d(TAG, "There was an error updating the user profile")
                                                 }
                                             }
                                     }
-                                }  finally {
-                                    // Update loading state after coroutine completes
+                                } finally {
                                     _loading.postValue(false)
                                 }
                             }
@@ -118,7 +109,7 @@ class UserRepository (private val firestoreDb: FirebaseFirestore, private val fi
                 } else {
                     try {
                         _loading.value = false
-                        throw task.exception ?: java.lang.Exception("Invalid authentication")
+                        throw task.exception ?: Exception("Invalid authentication")
                     } catch (e: FirebaseAuthWeakPasswordException) {
                         val message = "Authentication failed, Password should be at least 6 characters"
                         errorCallback(message)
@@ -132,7 +123,7 @@ class UserRepository (private val firestoreDb: FirebaseFirestore, private val fi
                         errorCallback(message)
                         Log.d(TAG, message)
                     } catch (e: Exception) {
-                        errorCallback(" An error occured while creating your user")
+                        errorCallback("An error occurred while creating your user")
                         e.message?.let { Log.d(TAG, it) }
                     }
                 }
@@ -151,7 +142,7 @@ class UserRepository (private val firestoreDb: FirebaseFirestore, private val fi
                     }
                 } else {
                     try {
-                        throw task.exception ?: java.lang.Exception("Invalid authentication")
+                        throw task.exception ?: Exception("Invalid authentication")
                     } catch (e: FirebaseAuthInvalidUserException) {
                         val message = "There is no user with this email address"
                         errorCallback(message)
@@ -161,7 +152,7 @@ class UserRepository (private val firestoreDb: FirebaseFirestore, private val fi
                         errorCallback(message)
                         Log.d(TAG, message)
                     } catch (e: Exception) {
-                        errorCallback(" An error occurred while logging in")
+                        errorCallback("An error occurred while logging in")
                         e.message?.let { Log.d(TAG, it) }
                     }
                     _loginFailed.value = true
@@ -176,13 +167,10 @@ class UserRepository (private val firestoreDb: FirebaseFirestore, private val fi
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 var uri = imgUrl
-                if(uploadPic) {
-                    // upload image to firebase storage
-                    uri = ImageUtil.UploadImage(firestoreAuth.currentUser!!.uid, imgUrl, profileImageRef)!!
+                if (uploadPic) {
+                    uri = ImageUtil.uploadImage(firestoreAuth.currentUser!!.uid, imgUrl, profileImageRef, contentResolver)!!
                 }
-                // if download url is not empty the upload was successful
                 if (uri != null) {
-                    // update the new user with the name and image url
                     val profileUpdates = UserProfileChangeRequest.Builder()
                         .setDisplayName(name)
                         .setPhotoUri(uri)
@@ -203,7 +191,6 @@ class UserRepository (private val firestoreDb: FirebaseFirestore, private val fi
             } catch (e: Exception) {
                 // Handle exceptions
             } finally {
-                // Update loading state after coroutine completes
                 _loading.postValue(false)
             }
         }

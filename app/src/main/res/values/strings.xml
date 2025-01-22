@@ -3,4 +3,8 @@
     <string name="profile">Profile</string>
     <string name="home">Home</string>
     <string name="addpost">Add post</string>
+    <string name="select_img">Upload post image</string>
+    <string name="enter_title">Enter post title</string>
+    <string name="enter_desc">Enter post description</string>
+    <string name="image_error">Can\'t display image</string>
 </resources>

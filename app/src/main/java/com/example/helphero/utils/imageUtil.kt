@@ -10,14 +10,8 @@ import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import android.widget.ProgressBar
 import com.example.helphero.R
 import com.google.android.gms.tasks.Task
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.IOException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 class ImageUtil private constructor() {
     companion object {
@@ -73,56 +67,21 @@ class ImageUtil private constructor() {
             }
         }
 
-    /*    fun showImgInViewFromUrl(imageUri: String, imageView: ImageView, progressBar: ProgressBar) {
-            progressBar.visibility = ProgressBar.VISIBLE
-
-            CoroutineScope(Dispatchers.Main).launch {
-                try {
-                    val degrees = withContext(Dispatchers.IO) {
-                        val client = OkHttpClient()
-                        val request = Request.Builder().url(imageUri).build()
-                        client.newCall(request).execute().use { response ->
-                            if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                            response.body?.byteStream()?.use { inputStream ->
-                                val exif = ExifInterface(inputStream!!)
-                                val rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-                                when (rotation) {
-                                    ExifInterface.ORIENTATION_ROTATE_90 -> 90F
-                                    ExifInterface.ORIENTATION_ROTATE_180 -> 180F
-                                    ExifInterface.ORIENTATION_ROTATE_270 -> 270F
-                                    else -> 0F
-                                }
-                            } ?: 0F
-                        }
-                    }
-
-                    Picasso.get()
-                        .load(imageUri)
-                        .rotate(degrees)
-                        .fit()
-                        .centerCrop()
-                        .into(imageView)
-
-                    progressBar.visibility = ProgressBar.GONE
-                } catch (e: Exception) {
-                    progressBar.visibility = ProgressBar.GONE
-                }
-            }
-        }
-*/
-        suspend fun UploadImage(imageId: String, imageUri: Uri, storageRef: StorageReference): Uri? {
-            val imageRef = storageRef.child(imageId)
+        suspend fun uploadImage(imageId: String, imageUri: Uri, storageRef: StorageReference, contentResolver: ContentResolver): Uri? {
+            val imageRef = storageRef.child("images/$imageId")
+            Log.d("ImageUtil", "Starting upload for imageId: $imageId, Uri: $imageUri")
 
             return try {
-                imageRef.putFile(imageUri).await()
-
-                val downloadUrl = withContext(Dispatchers.IO) {
-                    imageRef.downloadUrl.await()
+                contentResolver.openInputStream(imageUri)?.use { inputStream ->
+                    val uploadTask = imageRef.putStream(inputStream).await()
+                    val downloadUrl = withContext(Dispatchers.IO) {
+                        imageRef.downloadUrl.await()
+                    }
+                    Log.d("ImageUtil", "Upload successful for imageId: $imageId, downloadUrl: $downloadUrl")
+                    downloadUrl
                 }
-
-                downloadUrl
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("ImageUtil", "Upload failed for imageId: $imageId, Uri: $imageUri", e)
                 null
             }
         }

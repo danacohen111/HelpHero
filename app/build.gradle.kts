@@ -94,6 +94,7 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("androidx.room:room-runtime:2.5.0")
     implementation ("com.google.code.gson:gson:2.8.9")
+    implementation("com.google.android.gms:play-services-auth:20.2.0")
     kapt("androidx.room:room-compiler:2.5.0")
 
 }

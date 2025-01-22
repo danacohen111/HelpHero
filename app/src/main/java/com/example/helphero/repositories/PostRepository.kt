@@ -85,7 +85,7 @@ class PostRepository(
                     }
 
                     if (snapshot != null) {
-                        Log.d(TAG, "Snapshot received with ${snapshot.documentChanges.size} changes")
+                        Log.d(TAG, "Snapshot received: $snapshot")
                         snapshot.documentChanges.forEach { change ->
                             Log.d(TAG, "Document Change Type: ${change.type}, Document ID: ${change.document.id}, Data: ${change.document.data}")
                         }

@@ -62,10 +62,10 @@ class HomeFragment : Fragment() {
     private fun observePosts() {
         postViewModel.postsLiveData.observe(viewLifecycleOwner, Observer { posts: List<Post> ->
             if (posts.isNotEmpty()) {
-                Log.d("HomeFragment", "Posts received: ${posts.size}")
+                binding.textViewEmptyState.visibility = View.GONE
                 postAdapter.submitList(posts)
             } else {
-                Log.d("HomeFragment", "No posts found")
+                binding.textViewEmptyState.visibility = View.VISIBLE
             }
         })
     }

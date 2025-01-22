@@ -30,7 +30,6 @@ class SignInFragment : Fragment() {
         val userRepository = UserRepository(
             firestoreDb = FirebaseFirestore.getInstance(),
             firestoreAuth = FirebaseAuth.getInstance(),
-            userDao = userDao,
             contentResolver = requireContext().contentResolver
         )
         viewModel = ViewModelProvider(

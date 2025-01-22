@@ -4,17 +4,14 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
 import android.widget.ImageView
-import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.helphero.databases.users.UserDao
 import com.example.helphero.models.FirestoreUser
-import com.example.helphero.models.User
 import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
@@ -29,7 +26,6 @@ import kotlinx.coroutines.launch
 class UserRepository(
     private val firestoreDb: FirebaseFirestore,
     private val firestoreAuth: FirebaseAuth,
-    private val userDao: UserDao,
     private val contentResolver: ContentResolver
 ) {
 
@@ -60,10 +56,11 @@ class UserRepository(
     private val _updateSuccessfull = MutableLiveData<Boolean>()
     val updateSuccessfull: LiveData<Boolean> = _updateSuccessfull
 
-    @WorkerThread
-    fun get(id: String): User = userDao.get(id)
-
-    fun createUser(newUser: FirestoreUser, profileImageRef: StorageReference, errorCallback: (String) -> Unit) {
+    fun createUser(
+        newUser: FirestoreUser,
+        profileImageRef: StorageReference,
+        errorCallback: (String) -> Unit
+    ) {
         _loading.value = true
         firestoreAuth.createUserWithEmailAndPassword(newUser.email, newUser.password)
             .addOnCompleteListener { task ->

@@ -1,5 +1,6 @@
 package com.example.helphero.repositories
 
+import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.WorkerThread
@@ -26,7 +27,8 @@ import kotlinx.coroutines.launch
 class PostRepository(
     private val firestoreDb: FirebaseFirestore,
     private val firebaseAuth: FirebaseAuth,
-    private val postDao: PostDao
+    private val postDao: PostDao,
+    private val contentResolver: ContentResolver
 ) {
 
     private val TAG = "PostRepository"
@@ -127,8 +129,8 @@ class PostRepository(
             try {
                 Log.d(TAG, "Inserting post with id: ${post.postId}")
                 if (post.imageUrl.isEmpty()) {
-                    val imageUrl = ImageUtil.uploadImage(post.postId, imageUri, storageRef).toString()
-                    post.imageUrl = imageUrl
+                    //val imageUrl = ImageUtil.uploadImage(post.postId, imageUri, storageRef, contentResolver).toString()
+                    post.imageUrl = "hi"
                     Log.d(TAG, "Image uploaded for post with id: ${post.postId}")
                 }
                 val fsPost = post.toFirestorePost()

@@ -49,7 +49,8 @@ class AddPostFragment : Fragment(R.layout.fragment_add_post) {
         val firebaseAuth = FirebaseAuth.getInstance() // Initialize FirebaseAuth
         val database = PostDatabase.getDatabase(requireContext()) // Get the database instance
         val postDao = database.postDao() // Get the PostDao instance
-        val repository = PostRepository(firestoreDb, firebaseAuth, postDao) // Pass required parameters to repository
+        val contentResolver = requireContext().contentResolver
+        val repository = PostRepository(firestoreDb, firebaseAuth, postDao, contentResolver) // Pass required parameters to repository
         val factory = PostViewModel.PostModelFactory(repository)
         postViewModel = ViewModelProvider(requireActivity(), factory)[PostViewModel::class.java]
 

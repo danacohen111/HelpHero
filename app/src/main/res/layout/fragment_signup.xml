@@ -118,7 +118,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:src="@drawable/israel"
-        app:layout_constraintTop_toBottomOf="@id/signupButton"
+        app:layout_constraintTop_toBottomOf="@id/signUpButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />

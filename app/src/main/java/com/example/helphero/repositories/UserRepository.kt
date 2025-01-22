@@ -54,8 +54,8 @@ class UserRepository(
     private val _ImageToShow = MutableLiveData<Uri>()
     val imageToShow: LiveData<Uri> = _ImageToShow
 
-    private val _currUser = MutableLiveData<FirebaseUser>()
-    val currUser: LiveData<FirebaseUser> = _currUser
+    private val _currUser = MutableLiveData<FirebaseUser?>()
+    val currUser: LiveData<FirebaseUser?> = _currUser
 
     private val _updateSuccessfull = MutableLiveData<Boolean>()
     val updateSuccessfull: LiveData<Boolean> = _updateSuccessfull
@@ -236,6 +236,7 @@ class UserRepository(
 
     fun logOut() {
         FirebaseAuth.getInstance().signOut()
+        _currUser.postValue(null)  // Update the current user LiveData
     }
 
     fun ShowImgInView(contentResolver: ContentResolver, imageView: ImageView, imageUri: Uri) {

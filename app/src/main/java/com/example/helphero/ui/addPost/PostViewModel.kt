@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.helphero.models.Post
 import com.example.helphero.repositories.PostRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -39,7 +40,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     // TO DO: Check the authenticated user and save the post
     fun savePost(title: String, desc: String, imageUri: Uri) {
         val postId: String = UUID.randomUUID().toString()
-        val userId = "anonymous" // Use a default or anonymous user ID
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
 
         viewModelScope.launch(Dispatchers.IO) {
             try {

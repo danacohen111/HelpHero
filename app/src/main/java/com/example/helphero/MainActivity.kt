@@ -1,6 +1,8 @@
 package com.example.helphero
 
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -17,7 +19,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private var isLoggedIn: Boolean = true
+    private var isLoggedIn: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,9 +35,11 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(bottomNavigationView, navController)
         bottomNavigationView.inflateMenu(R.menu.menu_bottom_navigation)
-        //isLoggedin()
+
+        isLoggedin()
 
         if (isLoggedIn) {
+            Log.d(TAG, "user is logged")
             navController.navigate(R.id.homeFragment)
             bottomNavigationView.visibility = BottomNavigationView.VISIBLE
         } else {

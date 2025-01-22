@@ -84,43 +84,45 @@ class PostRepository(
                         return@addSnapshotListener
                     }
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val posts = mutableListOf<Post>()
+                    if (snapshot != null) {
+                        Log.d(TAG, "Snapshot received with ${snapshot.documentChanges.size} changes")
+                        snapshot.documentChanges.forEach { change ->
+                            Log.d(TAG, "Document Change Type: ${change.type}, Document ID: ${change.document.id}, Data: ${change.document.data}")
+                        }
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val posts = mutableListOf<Post>()
+                            val deletedPosts = mutableListOf<Post>()
 
-                        snapshot?.documents?.forEach { document ->
-                            val firestorePost = document.toObject(FirestorePost::class.java)
-                            firestorePost?.let { fsPost ->
-                                val post = fsPost.toRoomPost(document.id)
-                                insert(post)
-                                posts.add(post)
+                            snapshot.documentChanges.forEach { change ->
+                                val firestorePost = change.document.toObject(FirestorePost::class.java)
+                                firestorePost?.let { fsPost ->
+                                    val post = fsPost.toRoomPost(change.document.id)
+                                    when (change.type) {
+                                        DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
+                                            insert(post)
+                                            posts.add(post)
+                                        }
+                                        DocumentChange.Type.REMOVED -> {
+                                            delete(post)
+                                            deletedPosts.add(post)
+                                        }
+                                    }
+                                }
                             }
+                            _postsLiveData.postValue(posts)
+                            Log.d(TAG, "Post updates processed: ${posts.size} posts, ${deletedPosts.size} deleted posts")
                         }
-                        _postsLiveData.postValue(posts)
-                        Log.d(TAG, "Post updates received: ${posts.size} posts")
+                    } else {
+                        Log.d(TAG, "Snapshot is null")
                     }
                 }
 
-        firestoreDb.collection(COLLECTION)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.e(TAG, "Error listening for deleted posts", error)
-                    return@addSnapshotListener
-                }
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    val deletedItems = snapshot?.documentChanges
-                        ?.filter { it.type == DocumentChange.Type.REMOVED }
-                        ?.mapNotNull { change ->
-                            change.document.toObject(FirestorePost::class.java)
-                                .toRoomPost(change.document.id)
-                        }
-
-                    deletedItems?.let { items ->
-                        items.forEach { delete(it) }
-                        Log.d(TAG, "Deleted posts received: ${items.size} posts")
-                    }
-                }
+        _postsLiveData.observeForever { posts ->
+            Log.d(TAG, "Current posts in LiveData: ${posts.size}")
+            posts.forEach { post ->
+                Log.d(TAG, "Post ID: ${post.postId}, Title: ${post.title}, Description: ${post.desc}")
             }
+        }
     }
 
     fun insertPost(post: Post, imageUri: Uri) {

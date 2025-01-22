@@ -1,4 +1,4 @@
-package com.example.helphero.ui.addPost
+package com.example.helphero.ui.viewmodels
 
 import android.net.Uri
 import androidx.lifecycle.*
@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class PostViewModel(private val repository: PostRepository) : ViewModel() {
+
+    val postsLiveData: LiveData<List<Post>> = repository.postsLiveData
 
     private val _postSuccessful = MutableLiveData<Boolean>()
     val postSuccessful: LiveData<Boolean> get() = _postSuccessful

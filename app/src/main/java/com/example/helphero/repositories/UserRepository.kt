@@ -12,6 +12,7 @@ import com.example.helphero.models.FirestoreUser
 import com.example.helphero.models.User
 import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -72,7 +73,12 @@ class UserRepository(
                         _ImageToShow.value?.let { uri ->
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
-                                    val uri = ImageUtil.uploadImage(firestoreAuth.currentUser?.uid ?: "", uri, profileImageRef, contentResolver)
+                                    val uri = ImageUtil.uploadImage(
+                                        firestoreAuth.currentUser?.uid ?: "",
+                                        uri,
+                                        profileImageRef,
+                                        contentResolver
+                                    )
                                     if (uri != null) {
                                         val profileUpdates = userProfileChangeRequest {
                                             displayName = newUser.name
@@ -93,10 +99,13 @@ class UserRepository(
                                                             )
                                                         }
                                                     } finally {
-                                                        _signUpSuccessfull.value = true
+                                                        _signUpSuccessfull.postValue(true)
                                                     }
                                                 } else {
-                                                    Log.d(TAG, "There was an error updating the user profile")
+                                                    Log.d(
+                                                        TAG,
+                                                        "There was an error updating the user profile"
+                                                    )
                                                 }
                                             }
                                     }
@@ -108,10 +117,11 @@ class UserRepository(
                     }
                 } else {
                     try {
-                        _loading.value = false
+                        _loading.postValue(false)
                         throw task.exception ?: Exception("Invalid authentication")
                     } catch (e: FirebaseAuthWeakPasswordException) {
-                        val message = "Authentication failed, Password should be at least 6 characters"
+                        val message =
+                            "Authentication failed, Password should be at least 6 characters"
                         errorCallback(message)
                         Log.d(TAG, message)
                     } catch (e: FirebaseAuthInvalidCredentialsException) {
@@ -131,44 +141,58 @@ class UserRepository(
     }
 
     fun login(email: String, password: String, errorCallback: (String) -> Unit) {
-        _loading.value = true
+        _loading.postValue(true)
         firestoreAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = firestoreAuth.currentUser
                     if (user != null) {
-                        _loginSuccessfull.value = true
+                        _loginSuccessfull.postValue(true)
                         Log.i("Login", "signInWithEmailAndPassword:success")
                     }
                 } else {
                     try {
-                        throw task.exception ?: Exception("Invalid authentication")
+                        throw task.exception ?: Exception("Unknown authentication error")
                     } catch (e: FirebaseAuthInvalidUserException) {
-                        val message = "There is no user with this email address"
+                        val message = "There is no user with this email address."
                         errorCallback(message)
                         Log.d(TAG, message)
                     } catch (e: FirebaseAuthInvalidCredentialsException) {
-                        val message = "password is incorrect"
+                        val message = "Incorrect password. Please try again."
+                        errorCallback(message)
+                        Log.d(TAG, message)
+                    } catch (e: FirebaseAuthException) {
+                        val message = "Authentication failed. Please try again."
                         errorCallback(message)
                         Log.d(TAG, message)
                     } catch (e: Exception) {
-                        errorCallback("An error occurred while logging in")
+                        errorCallback("An error occurred while logging in.")
                         e.message?.let { Log.d(TAG, it) }
                     }
-                    _loginFailed.value = true
+                    _loginFailed.postValue(true)
                 }
-                _loading.value = false
+                _loading.postValue(false)
             }
     }
 
-    fun updateProfile(name: String, profileImageRef: StorageReference, imgUrl: Uri, uploadPic: Boolean) {
-        _loading.value = true
+    fun updateProfile(
+        name: String,
+        profileImageRef: StorageReference,
+        imgUrl: Uri,
+        uploadPic: Boolean
+    ) {
+        _loading.postValue(true)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 var uri = imgUrl
                 if (uploadPic) {
-                    uri = ImageUtil.uploadImage(firestoreAuth.currentUser!!.uid, imgUrl, profileImageRef, contentResolver)!!
+                    uri = ImageUtil.uploadImage(
+                        firestoreAuth.currentUser!!.uid,
+                        imgUrl,
+                        profileImageRef,
+                        contentResolver
+                    )!!
                 }
                 if (uri != null) {
                     val profileUpdates = UserProfileChangeRequest.Builder()
@@ -181,10 +205,15 @@ class UserRepository(
                             if (task.isSuccessful) {
                                 val updatedUser = firestoreAuth.currentUser
                                 updatedUser?.let { user ->
-                                    _currUser.value = user
-                                    storeUserData(user.uid, user.email, user.displayName, user.photoUrl)
+                                    _currUser.postValue(user)
+                                    storeUserData(
+                                        user.uid,
+                                        user.email,
+                                        user.displayName,
+                                        user.photoUrl
+                                    )
                                 }
-                                _updateSuccessfull.value = true
+                                _updateSuccessfull.postValue(true)
                             }
                         }
                 }
@@ -211,10 +240,10 @@ class UserRepository(
 
     fun ShowImgInView(contentResolver: ContentResolver, imageView: ImageView, imageUri: Uri) {
         ImageUtil.ShowImgInViewFromGallery(contentResolver, imageView, imageUri)
-        _ImageToShow.value = imageUri
+        _ImageToShow.postValue(imageUri)
     }
 
     fun updateCurrUser(user: FirebaseUser) {
-        _currUser.value = user
+        _currUser.postValue(user)
     }
 }

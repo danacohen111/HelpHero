@@ -13,14 +13,15 @@ data class Comment (
 )
 
 data class FirestoreComment(
+    val commentId: String = "",
     val postId: String = "",
     val userId: String = "",
     val text: String = ""
 )
 
-fun FirestoreComment.toRoomComment(commentId: String): Comment {
+fun FirestoreComment.toRoomComment(): Comment {
     return Comment(
-        commentId = commentId,
+        commentId = this.commentId,
         postId = this.postId,
         userId = this.userId,
         text = this.text
@@ -29,6 +30,7 @@ fun FirestoreComment.toRoomComment(commentId: String): Comment {
 
 fun Comment.toFirestoreComment(): FirestoreComment {
     return FirestoreComment(
+        commentId = this.commentId,
         postId = this.postId,
         userId = this.userId,
         text = this.text

@@ -59,8 +59,10 @@ class UserRepository(
     private val _updateSuccessfull = MutableLiveData<Boolean>()
     val updateSuccessfull: LiveData<Boolean> = _updateSuccessfull
 
-    @WorkerThread
-    fun get(id: String): User = userDao.get(id)
+    // Wrap the blocking database call with a coroutine and execute it on a background thread
+    suspend fun get(id: String): User {
+        return userDao.get(id)
+    }
 
     fun createUser(newUser: FirestoreUser, profileImageRef: StorageReference, errorCallback: (String) -> Unit) {
         _loading.value = true

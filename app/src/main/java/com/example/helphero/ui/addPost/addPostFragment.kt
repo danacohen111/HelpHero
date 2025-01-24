@@ -1,6 +1,5 @@
 package com.example.helphero.ui.addPost
 
-import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -22,6 +21,7 @@ import com.example.helphero.repositories.PostRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.helphero.databases.posts.PostDatabase
+import com.example.helphero.ui.viewmodels.PostViewModel
 
 class AddPostFragment : Fragment(R.layout.fragment_add_post) {
     private lateinit var binding: FragmentAddPostBinding

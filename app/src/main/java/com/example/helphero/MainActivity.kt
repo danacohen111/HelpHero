@@ -3,6 +3,8 @@ package com.example.helphero
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
@@ -33,7 +35,12 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(bottomNavigationView, navController)
         bottomNavigationView.inflateMenu(R.menu.menu_bottom_navigation)
-        //isLoggedin()
+
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView) { view, insets ->
+            val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(0, 0, 0, systemBarInsets.bottom)
+            insets
+        }
 
         if (isLoggedIn) {
             navController.navigate(R.id.homeFragment)

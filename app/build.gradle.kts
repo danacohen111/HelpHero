@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.filament.android)
     implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.androidx.swiperefreshlayout)
     testImplementation(libs.junit)
     implementation ("androidx.multidex:multidex:2.0.1")
     testImplementation("junit:junit:4.13.2")

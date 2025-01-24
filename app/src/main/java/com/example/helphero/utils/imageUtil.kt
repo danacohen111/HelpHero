@@ -16,10 +16,10 @@ import com.google.android.gms.tasks.Task
 class ImageUtil private constructor() {
     companion object {
 
-        fun loadImage(imageUri: Uri?, imageView: ImageView) {
+        fun loadImage(imageUri: Uri?, imageView: ImageView, placeholderResId: Int = R.drawable.applogo) {
             Picasso.get()
                 .load(imageUri)
-                .placeholder(R.drawable.applogo)
+                .placeholder(placeholderResId)
                 .into(imageView)
         }
 

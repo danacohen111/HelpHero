@@ -49,7 +49,7 @@ class HomeFragment : Fragment() {
         setupRecyclerView()
         setupSwipeRefreshLayout()
         observePosts()
-        handleWindowInsets() // Add WindowInsets handling here
+        handleWindowInsets()
     }
 
     private fun setupRecyclerView() {
@@ -80,14 +80,13 @@ class HomeFragment : Fragment() {
     }
 
     private fun handleWindowInsets() {
-        // Adjust SwipeRefreshLayout padding dynamically using WindowInsets
         ViewCompat.setOnApplyWindowInsetsListener(binding.swipeRefreshLayout) { view, insets ->
             val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(
                 view.paddingLeft,
                 view.paddingTop,
                 view.paddingRight,
-                systemBarInsets.bottom // Add bottom padding dynamically
+                systemBarInsets.bottom // Add dynamic bottom padding
             )
             insets
         }

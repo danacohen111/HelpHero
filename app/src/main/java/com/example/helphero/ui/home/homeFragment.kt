@@ -1,12 +1,12 @@
 package com.example.helphero.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.helphero.databinding.FragmentHomeBinding
@@ -15,7 +15,6 @@ import com.example.helphero.models.Post
 import com.example.helphero.repositories.PostRepository
 import com.example.helphero.ui.adapters.PostAdapter
 import com.example.helphero.ui.viewmodels.PostViewModel
-import com.example.helphero.ui.viewmodels.PostViewModel.PostModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -48,7 +47,9 @@ class HomeFragment : Fragment() {
         postViewModel = ViewModelProvider(requireActivity(), factory)[PostViewModel::class.java]
 
         setupRecyclerView()
+        setupSwipeRefreshLayout()
         observePosts()
+        handleWindowInsets() // Add WindowInsets handling here
     }
 
     private fun setupRecyclerView() {
@@ -59,15 +60,37 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun setupSwipeRefreshLayout() {
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            observePosts()
+        }
+    }
+
     private fun observePosts() {
-        postViewModel.postsLiveData.observe(viewLifecycleOwner, Observer { posts: List<Post> ->
+        postViewModel.postsLiveData.observe(viewLifecycleOwner) { posts: List<Post> ->
+            binding.swipeRefreshLayout.isRefreshing = false
             if (posts.isNotEmpty()) {
                 binding.textViewEmptyState.visibility = View.GONE
                 postAdapter.submitList(posts)
+                binding.recyclerViewPosts.layoutManager?.scrollToPosition(0)
             } else {
                 binding.textViewEmptyState.visibility = View.VISIBLE
             }
-        })
+        }
+    }
+
+    private fun handleWindowInsets() {
+        // Adjust SwipeRefreshLayout padding dynamically using WindowInsets
+        ViewCompat.setOnApplyWindowInsetsListener(binding.swipeRefreshLayout) { view, insets ->
+            val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                view.paddingLeft,
+                view.paddingTop,
+                view.paddingRight,
+                systemBarInsets.bottom // Add bottom padding dynamically
+            )
+            insets
+        }
     }
 
     override fun onDestroyView() {

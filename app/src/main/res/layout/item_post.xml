@@ -18,8 +18,8 @@
         <!-- Post Info Layout -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/userInfoLayout"
-            android:layout_width="143dp"
-            android:layout_height="252dp"
+            android:layout_width="126dp"
+            android:layout_height="178dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/postInfoLayout"
             app:layout_constraintStart_toStartOf="parent"
@@ -28,22 +28,28 @@
             app:layout_constraintWidth_percent="0.4">
 
             <!-- Profile Image -->
+
+            <!-- Username -->
+
+            <!-- Post Timestamp -->
             <ImageView
                 android:id="@+id/imageViewProfile"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="12dp"
                 android:contentDescription="Profile Image"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_profile_placeholder"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Username -->
             <TextView
                 android:id="@+id/textViewUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="12dp"
                 android:text="Username"
                 android:textColor="@android:color/black"
                 android:textSize="14sp"
@@ -51,26 +57,28 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/imageViewProfile" />
 
-            <!-- Post Timestamp -->
+            <!-- Phone Icon -->
+
+            <!-- Phone Number -->
+
             <TextView
                 android:id="@+id/textViewPostTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
                 android:text="5 min ago"
                 android:textColor="@android:color/darker_gray"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/textViewUsername" />
 
-            <!-- Phone Icon -->
-
-            <!-- Phone Number -->
             <ImageView
                 android:id="@+id/imageViewPhoneIcon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginTop="84dp"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
                 android:contentDescription="Phone Icon"
                 android:src="@drawable/ic_phone"
                 app:layout_constraintStart_toStartOf="parent"
@@ -78,9 +86,9 @@
 
             <TextView
                 android:id="@+id/textViewPhoneNumber"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+                android:layout_width="79dp"
+                android:layout_height="18dp"
+                android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
                 android:text="123-456-7890"
                 android:textColor="@android:color/black"
@@ -93,8 +101,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/postInfoLayout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="222dp"
+            android:layout_height="268dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/userInfoLayout"
@@ -119,13 +127,15 @@
             <!-- Post Caption -->
             <TextView
                 android:id="@+id/textViewPostCaption"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="211dp"
+                android:layout_height="35dp"
                 android:layout_marginTop="8dp"
                 android:text="This is the caption for the post. It is short and descriptive."
                 android:textColor="@android:color/black"
                 android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/imageViewPostImage" />
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -30,7 +30,6 @@ class PostRepository(
     private val postDao: PostDao,
     private val contentResolver: ContentResolver
 ) {
-
     private val TAG = "PostRepository"
     private val COLLECTION = "posts"
     private val storageRef: StorageReference = Firebase.storage.reference.child("posts")
@@ -47,7 +46,7 @@ class PostRepository(
     val postSuccessful: LiveData<Boolean> get() = _postSuccessful
 
     @WorkerThread
-    fun get(id: Int): Post {
+    fun get(id: String): Post? {
         Log.d(TAG, "Fetching post with id: $id")
         return postDao.get(id)
     }
@@ -60,13 +59,13 @@ class PostRepository(
 
     @WorkerThread
     suspend fun insert(post: Post) {
-        Log.d(TAG, "Inserting post")
+        Log.d(TAG, "Inserting post into Room database")
         postDao.insert(post)
     }
 
     @WorkerThread
     suspend fun delete(post: Post) {
-        Log.d(TAG, "Deleting post")
+        Log.d(TAG, "Deleting post from Room database")
         postDao.delete(post)
     }
 
@@ -75,76 +74,68 @@ class PostRepository(
     }
 
     private fun listenForPostUpdates() {
-        Log.d(TAG, "Listening for post updates")
-        postsListenerRegistration =
-            firestoreDb.collection(COLLECTION).orderBy("date", Query.Direction.DESCENDING)
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) {
-                        Log.e(TAG, "Error listening for post updates", error)
-                        return@addSnapshotListener
-                    }
-
-                    if (snapshot != null) {
-                        Log.d(TAG, "Snapshot received: $snapshot")
-                        snapshot.documentChanges.forEach { change ->
-                            Log.d(TAG, "Document Change Type: ${change.type}, Document ID: ${change.document.id}, Data: ${change.document.data}")
-                        }
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val posts = mutableListOf<Post>()
-                            val deletedPosts = mutableListOf<Post>()
-
-                            snapshot.documentChanges.forEach { change ->
-                                Log.d(TAG, "Processing document change: ${change.document.id}")
-                                val firestorePost = change.document.toObject(FirestorePost::class.java)
-                                Log.d(TAG, "Converted Firestore document to FirestorePost: $firestorePost")
-                                firestorePost?.let { fsPost ->
-                                    val post = fsPost.toRoomPost(change.document.id)
-                                    Log.d(TAG, "Converted FirestorePost to Room Post: $post")
-                                    when (change.type) {
-                                        DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
-                                            Log.d(TAG, "Inserting or updating post: ${post.postId}")
-                                            insert(post)
-                                            posts.add(post)
-                                        }
-                                        DocumentChange.Type.REMOVED -> {
-                                            Log.d(TAG, "Deleting post: ${post.postId}")
-                                            delete(post)
-                                            deletedPosts.add(post)
-                                        }
-                                    }
-                                }
-                            }
-                            _postsLiveData.postValue(posts)
-                            Log.d(TAG, "Post updates processed: ${posts.size} posts, ${deletedPosts.size} deleted posts")
-                        }
-                    } else {
-                        Log.d(TAG, "Snapshot is null")
-                    }
+        Log.d(TAG, "Starting to listen for post updates")
+        postsListenerRegistration?.remove()
+        postsListenerRegistration = firestoreDb.collection(COLLECTION)
+            .orderBy("date", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e(TAG, "Error listening for post updates", error)
+                    return@addSnapshotListener
                 }
 
-        _postsLiveData.observeForever { posts ->
-            Log.d(TAG, "Current posts in LiveData: ${posts.size}")
-            posts.forEach { post ->
-                Log.d(TAG, "Post ID: ${post.postId}, Title: ${post.title}, Description: ${post.desc}")
+                if (snapshot == null || snapshot.documentChanges.isEmpty()) {
+                    Log.d(TAG, "No changes in Firestore snapshot")
+                    return@addSnapshotListener
+                }
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    val updatedPosts = mutableListOf<Post>()
+                    val removedPosts = mutableListOf<Post>()
+
+                    snapshot.documentChanges.forEach { change ->
+                        try {
+                            val firestorePost = change.document.toObject(FirestorePost::class.java)
+                            val post = firestorePost.toRoomPost(change.document.id)
+
+                            when (change.type) {
+                                DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
+                                        insert(post) // Only insert if not present
+                                        updatedPosts.add(post)
+                                }
+                                DocumentChange.Type.REMOVED -> {
+                                    delete(post)
+                                    removedPosts.add(post)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error processing document change: ${change.document.id}", e)
+                        }
+                    }
+
+                    if (updatedPosts.isNotEmpty() || removedPosts.isNotEmpty()) {
+                        _postsLiveData.postValue(postDao.getAll()) // Refresh Room data
+                        Log.d(
+                            TAG,
+                            "Processed Firestore changes: ${updatedPosts.size} added/modified, ${removedPosts.size} removed"
+                        )
+                    }
+                }
             }
-        }
     }
 
     fun insertPost(post: Post, imageUri: Uri) {
         _loading.postValue(true)
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                Log.d(TAG, "Inserting post with id: ${post.postId}")
-                if (post.imageUrl.isEmpty()) {
-                    //TO DO: upload the image once the storage is initiallized
-                    //val imageUrl = ImageUtil.uploadImage(post.postId, imageUri, storageRef, contentResolver).toString()
-                    post.imageUrl = "hi"
-                    Log.d(TAG, "Image uploaded for post with id: ${post.postId}")
-                }
+                Log.d(TAG, "Uploading image for post with id: ${post.postId}")
+                val imageUrl = ImageUtil.uploadImage(post.postId, imageUri, storageRef, contentResolver).toString()
+                post.imageUrl = imageUrl
+
                 val fsPost = post.toFirestorePost()
                 firestoreDb.collection(COLLECTION).document(post.postId).set(fsPost)
                     .addOnSuccessListener {
-                        Log.d(TAG, "Post inserted with id: ${post.postId}")
+                        Log.d(TAG, "Post successfully inserted with id: ${post.postId}")
                         _postSuccessful.postValue(true)
                     }
                     .addOnFailureListener { e ->
@@ -156,7 +147,6 @@ class PostRepository(
                 _postSuccessful.postValue(false)
             } finally {
                 _loading.postValue(false)
-                Log.d(TAG, "Post insertion completed for id: ${post.postId}")
             }
         }
     }
@@ -167,14 +157,12 @@ class PostRepository(
             .addOnSuccessListener {
                 firestoreDb.collection(COLLECTION).document(id).delete()
                     .addOnFailureListener {
-                        Log.e(TAG, "Could not delete post with id: $id", it)
-                        throw (Exception("Could not delete post"))
+                        Log.e(TAG, "Failed to delete post document with id: $id", it)
                     }
-                Log.d(TAG, "Post deleted with id: $id")
+                Log.d(TAG, "Post deleted successfully with id: $id")
             }
             .addOnFailureListener {
-                Log.e(TAG, "Could not delete image from storage for post with id: $id")
-                throw (Exception("Could not delete image from storage"))
+                Log.e(TAG, "Failed to delete image from storage for post with id: $id", it)
             }
     }
 }

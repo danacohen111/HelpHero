@@ -65,7 +65,7 @@ class PostAdapter(
                 binding.textViewUsername.text = user.name
                 binding.textViewPhoneNumber.text = user.phone
                 if (user.photoUrl.isNotEmpty()) {
-                    ImageUtil.loadImage(Uri.parse(user.photoUrl), binding.imageViewProfile)
+                    ImageUtil.loadImage(Uri.parse(user.photoUrl), binding.imageViewProfile,R.drawable.ic_profile_placeholder)
                 } else {
                     binding.imageViewProfile.setImageResource(R.drawable.ic_profile_placeholder)
                 }
@@ -73,7 +73,7 @@ class PostAdapter(
             binding.textViewPostTime.text = post.date
             binding.textViewPostCaption.text = post.desc
             if (post.imageUrl.isNotEmpty()) {
-                ImageUtil.loadImage(Uri.parse(post.imageUrl), binding.imageViewPostImage)
+                ImageUtil.loadImage(Uri.parse(post.imageUrl), binding.imageViewPostImage,R.drawable.ic_post_placeholder)
             } else {
                 binding.imageViewPostImage.setImageResource(R.drawable.ic_post_placeholder)
             }

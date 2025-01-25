@@ -21,7 +21,7 @@ data class FirestorePost(
     val desc: String = "",
     val imageUrl: String = "",
     val date: String = "",
-    val comments: List<Comment> = emptyList()
+    val comments: List<FirestoreComment> = emptyList()
 )
 
 fun FirestorePost.toRoomPost(postId: String): Post {
@@ -32,7 +32,7 @@ fun FirestorePost.toRoomPost(postId: String): Post {
         desc = this.desc,
         imageUrl = this.imageUrl,
         date = this.date,
-        comments = this.comments
+        comments = this.comments.map { it.toRoomComment() }
     )
 }
 
@@ -43,6 +43,6 @@ fun Post.toFirestorePost(): FirestorePost {
         desc = this.desc,
         imageUrl = this.imageUrl,
         date = this.date,
-        comments = this.comments
+        comments = this.comments.map { it.toFirestoreComment() }
     )
 }

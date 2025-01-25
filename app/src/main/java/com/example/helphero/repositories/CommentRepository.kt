@@ -77,7 +77,7 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
                 snapshot?.documents?.forEach { document ->
                     val firestoreComment = document.toObject(FirestoreComment::class.java)
                     firestoreComment?.let { fsComment ->
-                        val comment = fsComment.toRoomComment(document.id)
+                        val comment = fsComment.toRoomComment()
                         insert(comment)
                         comments.add(comment)
                     }
@@ -99,7 +99,7 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
                         ?.filter { it.type == DocumentChange.Type.REMOVED }
                         ?.mapNotNull { change ->
                             change.document.toObject(FirestoreComment::class.java)
-                                .toRoomComment(change.document.id)
+                                .toRoomComment()
                         }
 
                     deletedItems?.let { items ->

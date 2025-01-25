@@ -1,4 +1,4 @@
-package com.example.helphero.ui.addPost
+package com.example.helphero.ui.viewmodels
 
 import android.net.Uri
 import androidx.lifecycle.LiveData
@@ -18,6 +18,8 @@ import java.util.Locale
 import java.util.UUID
 
 class PostViewModel(private val repository: PostRepository) : ViewModel() {
+
+    val postsLiveData: LiveData<List<Post>> = repository.postsLiveData
 
     private val _postSuccessful = MutableLiveData<Boolean>()
     val postSuccessful: LiveData<Boolean> get() = _postSuccessful

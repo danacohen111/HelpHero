@@ -26,7 +26,7 @@ class UserRepository(
     val loginSuccessfull = MutableLiveData<Boolean>()
 
     @WorkerThread
-    fun get(id: String): User {
+    suspend fun get(id: String): User {
         Log.d(TAG, "Fetching user with id: $id")
         return userDao.get(id)
     }

@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.helphero.models.User
 import com.example.helphero.repositories.UserRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
@@ -22,7 +24,9 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
                 _user.value = getDefaultUser()
             } else {
                 try {
-                    val fetchedUser = userRepository.get(userId)
+                    val fetchedUser = withContext(Dispatchers.IO) {
+                        userRepository.get(userId)
+                    }
                     _user.value = fetchedUser
                 } catch (e: Exception) {
                     Log.d(TAG, "Error fetching user: ${e.message}")

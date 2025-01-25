@@ -19,5 +19,5 @@
     <fragment
         android:id="@+id/signInFragment"
         android:name="com.example.helphero.ui.signin.SignInFragment"
-        tools:layout="@layout/fragment_signin" />
+        tools:layout="@layout/fragment_sign_in" />
 </navigation>

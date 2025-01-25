@@ -34,7 +34,7 @@ class PostAdapter(
         val firebaseAuth = FirebaseAuth.getInstance()
         val database = UserDatabase.getDatabase(context)
         val userDao = database.userDao()
-        UserRepository(firestoreDb, firebaseAuth, userDao, contentResolver)
+        UserRepository(firestoreDb, firebaseAuth, contentResolver, userDao)
     }
 
     private val userViewModel: UserViewModel by lazy {

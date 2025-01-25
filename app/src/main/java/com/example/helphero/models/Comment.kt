@@ -19,16 +19,16 @@ data class FirestoreComment(
     val userId: String = "",
     val text: String = "",
     val date: String = ""
-    )
+)
 
-fun FirestoreComment.toRoomComment(): Comment {
+fun FirestoreComment.toRoomComment(id: String): Comment {
     return Comment(
-        commentId = this.commentId,
+        commentId = id,
         postId = this.postId,
         userId = this.userId,
         text = this.text,
         date = this.date
-        )
+    )
 }
 
 fun Comment.toFirestoreComment(): FirestoreComment {

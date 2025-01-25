@@ -125,7 +125,7 @@ class PostAdapter(
 
             // Observe comments LiveData and update RecyclerView
             commentViewModel.commentsLiveData.observe(lifecycleOwner) { comments ->
-                val postComments = comments.filter { it.postId == post.postId }
+                val postComments = comments.filter { it.postId == post.postId }.sortedByDescending { it.date }
                 val commentsAdapter = CommentAdapter(postComments, lifecycleOwner, UserViewModelFactory(userRepository))
                 binding.recyclerViewComments.adapter = commentsAdapter
                 binding.recyclerViewComments.layoutManager = LinearLayoutManager(context)

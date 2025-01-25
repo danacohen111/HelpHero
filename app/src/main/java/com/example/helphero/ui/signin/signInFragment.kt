@@ -30,11 +30,12 @@ class SignInFragment : Fragment() {
         val userRepository = UserRepository(
             firestoreDb = FirebaseFirestore.getInstance(),
             firestoreAuth = FirebaseAuth.getInstance(),
-            contentResolver = requireContext().contentResolver
+            contentResolver = requireContext().contentResolver,
+            userDao = userDao
         )
         viewModel = ViewModelProvider(
             this,
-            SignInViewModelFactory(userRepository, userDao)
+            SignInViewModelFactory(userRepository)
         )[SignInViewModel::class.java]
 
         setupListeners()

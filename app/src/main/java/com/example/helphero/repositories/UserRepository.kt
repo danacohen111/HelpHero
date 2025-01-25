@@ -75,4 +75,35 @@ class UserRepository(
             }
         }
     }
+
+    fun signUp(
+        email: String,
+        password: String,
+        name: String,
+        phone: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        firestoreAuth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val firebaseUser: FirebaseUser? = firestoreAuth.currentUser
+                    firebaseUser?.let { user ->
+                        val newFirestoreUser = FirestoreUser(name, phone, "", email, password)
+                        firestoreDb.collection("users").document(user.uid).set(newFirestoreUser)
+                            .addOnSuccessListener {
+                                saveUserLocally(newFirestoreUser.toRoomUser(user.uid))
+                                onSuccess()
+                            }
+                            .addOnFailureListener { exception ->
+                                onError("Error saving user to Firestore: ${exception.message}")
+                            }
+                    }
+                } else {
+                    val errorMessage = task.exception?.message ?: "Sign-up failed"
+                    onError(errorMessage)
+                }
+            }
+    }
+
 }

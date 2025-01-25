@@ -1,14 +1,21 @@
 package com.example.helphero.ui.addPost
 
 import android.net.Uri
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.example.helphero.models.Post
 import com.example.helphero.repositories.PostRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 class PostViewModel(private val repository: PostRepository) : ViewModel() {
 
@@ -33,7 +40,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     // TO DO: Check the authenticated user and save the post
     fun savePost(title: String, desc: String, imageUri: Uri) {
         val postId: String = UUID.randomUUID().toString()
-        val userId = "anonymous" // Use a default or anonymous user ID
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
 
         viewModelScope.launch(Dispatchers.IO) {
             try {

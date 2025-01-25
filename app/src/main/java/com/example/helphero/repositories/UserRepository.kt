@@ -6,7 +6,9 @@ import android.util.Log
 import android.widget.ImageView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.helphero.databases.users.UserDao
 import com.example.helphero.models.FirestoreUser
+import com.example.helphero.models.User
 import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
@@ -26,6 +28,7 @@ import kotlinx.coroutines.launch
 class UserRepository(
     private val firestoreDb: FirebaseFirestore,
     private val firestoreAuth: FirebaseAuth,
+    private val userDao: UserDao, // Injecting UserDao here
     private val contentResolver: ContentResolver
 ) {
 
@@ -56,6 +59,7 @@ class UserRepository(
     private val _updateSuccessfull = MutableLiveData<Boolean>()
     val updateSuccessfull: LiveData<Boolean> = _updateSuccessfull
 
+    // Create user and upload profile image
     fun createUser(
         newUser: FirestoreUser,
         profileImageRef: StorageReference,
@@ -94,6 +98,16 @@ class UserRepository(
                                                                 user.displayName,
                                                                 user.photoUrl
                                                             )
+                                                            // Save user in local database through UserDao
+                                                            val userEntity = User(
+                                                                userId = user.uid,
+                                                                name = user.displayName ?: "",
+                                                                phone = "",
+                                                                photoUrl = user.photoUrl.toString(),
+                                                                email = user.email ?: "",
+                                                                password = newUser.password
+                                                            )
+                                                            userDao.update(userEntity)  // Save to local DB
                                                         }
                                                     } finally {
                                                         _signUpSuccessfull.postValue(true)
@@ -137,41 +151,83 @@ class UserRepository(
             }
     }
 
+    // Login method that interacts with Firebase and UserDao
     fun login(email: String, password: String, errorCallback: (String) -> Unit) {
         _loading.postValue(true)
-        firestoreAuth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = firestoreAuth.currentUser
-                    if (user != null) {
-                        _loginSuccessfull.postValue(true)
-                        Log.i("Login", "signInWithEmailAndPassword:success")
-                    }
-                } else {
-                    try {
-                        throw task.exception ?: Exception("Unknown authentication error")
-                    } catch (e: FirebaseAuthInvalidUserException) {
-                        val message = "There is no user with this email address."
-                        errorCallback(message)
-                        Log.d(TAG, message)
-                    } catch (e: FirebaseAuthInvalidCredentialsException) {
-                        val message = "Incorrect password. Please try again."
-                        errorCallback(message)
-                        Log.d(TAG, message)
-                    } catch (e: FirebaseAuthException) {
-                        val message = "Authentication failed. Please try again."
-                        errorCallback(message)
-                        Log.d(TAG, message)
-                    } catch (e: Exception) {
-                        errorCallback("An error occurred while logging in.")
-                        e.message?.let { Log.d(TAG, it) }
-                    }
-                    _loginFailed.postValue(true)
+
+        // Check local database first for user
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Try fetching the user from the local database
+                val localUser = userDao.get(email)
+                if (localUser != null && localUser.password == password) {
+                    // Local sign-in success
+                    val firebaseUser = FirebaseUser(
+                        email = localUser.email,
+                        displayName = localUser.name,
+                        uid = localUser.userId,
+                        photoUrl = localUser.photoUrl
+                    )
+                    _currUser.postValue(FirebaseUser(email))  // Simulate Firebase user
+                    _loginSuccessfull.postValue(true)
+                    _loading.postValue(false)
+                    return@launch
                 }
+
+                // If not found locally, try Firebase login
+                firestoreAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val user = firestoreAuth.currentUser
+                            if (user != null) {
+                                _currUser.postValue(user)
+                                _loginSuccessfull.postValue(true)
+                                // Save to local DB after successful Firebase login
+                                val newUser = User(
+                                    userId = user.uid,
+                                    name = user.displayName ?: "",
+                                    photoUrl = user.photoUrl.toString(),
+                                    email = user.email ?: "",
+                                    password = password,
+                                    phone = user.phoneNumber ?:""
+                                )
+                                userDao.update(newUser)  // Save to local DB
+                            }
+                        } else {
+                            try {
+                                throw task.exception ?: Exception("Unknown authentication error")
+                            } catch (e: FirebaseAuthInvalidUserException) {
+                                val message = "There is no user with this email address."
+                                errorCallback(message)
+                                Log.d(TAG, message)
+                            } catch (e: FirebaseAuthInvalidCredentialsException) {
+                                val message = "Incorrect password. Please try again."
+                                errorCallback(message)
+                                Log.d(TAG, message)
+                            } catch (e: FirebaseAuthException) {
+                                val message = "Authentication failed. Please try again."
+                                errorCallback(message)
+                                Log.d(TAG, message)
+                            } catch (e: Exception) {
+                                errorCallback("An error occurred while logging in.")
+                                e.message?.let { Log.d(TAG, it) }
+                            }
+                            _loginFailed.postValue(true)
+                        }
+                        _loading.postValue(false)
+                    }
+            } catch (e: Exception) {
+                // Handle any errors that might occur while accessing the local database
+                Log.e(TAG, "Error during login: ${e.message}")
+                errorCallback("An error occurred while logging in.")
+                _loginFailed.postValue(true)
                 _loading.postValue(false)
             }
+        }
     }
 
+
+    // Update user profile
     fun updateProfile(
         name: String,
         profileImageRef: StorageReference,
@@ -209,6 +265,16 @@ class UserRepository(
                                         user.displayName,
                                         user.photoUrl
                                     )
+                                    // Save updated user info to local DB
+                                    val userEntity = User(
+                                        userId = user.uid,
+                                        name = user.displayName ?: "",
+                                        phone = "",
+                                        photoUrl = user.photoUrl.toString(),
+                                        email = user.email ?: "",
+                                        password = "" // You can store password or leave empty
+                                    )
+                                    userDao.update(userEntity)
                                 }
                                 _updateSuccessfull.postValue(true)
                             }
@@ -222,6 +288,7 @@ class UserRepository(
         }
     }
 
+    // Store user data in Firestore
     private fun storeUserData(userId: String?, email: String?, name: String?, photo: Uri?) {
         val userData = hashMapOf(
             "userId" to userId,
@@ -231,17 +298,15 @@ class UserRepository(
         firestoreDb.collection(COLLECTION).document(email ?: "").set(userData)
     }
 
+    // Log out the current user
     fun logOut() {
         FirebaseAuth.getInstance().signOut()
         _currUser.postValue(null)  // Update the current user LiveData
     }
 
+    // Display an image from gallery in ImageView
     fun ShowImgInView(contentResolver: ContentResolver, imageView: ImageView, imageUri: Uri) {
         ImageUtil.ShowImgInViewFromGallery(contentResolver, imageView, imageUri)
         _ImageToShow.postValue(imageUri)
     }
 
-    fun updateCurrUser(user: FirebaseUser) {
-        _currUser.postValue(user)
-    }
-}

@@ -5,13 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.helphero.databases.users.UserDao
-import com.example.helphero.models.User
 import com.example.helphero.repositories.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class SignInViewModel(private val userRepository: UserRepository, private val userDao: UserDao) :
+class SignInViewModel(private val userRepository: UserRepository) :
     ViewModel() {
 
     private val _loading = MutableLiveData<Boolean>()
@@ -29,16 +27,6 @@ class SignInViewModel(private val userRepository: UserRepository, private val us
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // First, check the local database for the user
-                val localUser = userDao.get(email)
-                if (localUser != null && localUser.password == password) {
-                    // Local sign-in success
-                    _signInSuccess.postValue(true)
-                    _loading.postValue(false)
-                    return@launch
-                }
-
-                // If not found in local DB, fallback to Firebase authentication
                 userRepository.login(email, password) { error ->
                     _errorMessage.postValue(error)
                     _signInSuccess.postValue(false)
@@ -46,18 +34,6 @@ class SignInViewModel(private val userRepository: UserRepository, private val us
 
                 // If Firebase authentication is successful, save user locally
                 if (userRepository.loginSuccessfull.value == true) {
-                    val firebaseUser = userRepository.currUser.value
-                    firebaseUser?.let {
-                        val newUser = User(
-                            userId = it.uid,
-                            name = it.displayName ?: "",
-                            phone = "",
-                            photoUrl = it.photoUrl.toString(),
-                            email = it.email ?: "",
-                            password = password
-                        )
-                        userDao.update(newUser)
-                    }
                     _signInSuccess.postValue(true)
                 }
             } catch (e: Exception) {

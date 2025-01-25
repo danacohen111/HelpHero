@@ -59,7 +59,7 @@ class UserRepository(
     private val _updateSuccessfull = MutableLiveData<Boolean>()
     val updateSuccessfull: LiveData<Boolean> = _updateSuccessfull
 
-    // Wrap the blocking database call with a coroutine and execute it on a background thread
+    @WorkerThread
     suspend fun get(id: String): User {
         return userDao.get(id)
     }

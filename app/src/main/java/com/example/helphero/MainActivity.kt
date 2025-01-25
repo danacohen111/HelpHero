@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 
         NavigationUI.setupWithNavController(bottomNavigationView, navController)
         bottomNavigationView.inflateMenu(R.menu.menu_bottom_navigation)
+        //isLoggedin()
 
         ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView) { view, insets ->
             val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())

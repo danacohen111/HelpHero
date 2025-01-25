@@ -1,5 +1,6 @@
 package com.example.helphero.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,19 +14,18 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
     private val _user = MutableLiveData<User>()
     val user: LiveData<User> get() = _user
+    var TAG = "UserViewModel"
 
-    // Make sure the database call runs off the main thread using a coroutine
     fun getUserById(userId: String) {
         viewModelScope.launch {
             if (isAnonymousUser(userId)) {
                 _user.value = getDefaultUser()
             } else {
                 try {
-                    // Call the suspend function to get the user off the main thread
                     val fetchedUser = userRepository.get(userId)
                     _user.value = fetchedUser
                 } catch (e: Exception) {
-                    // Handle any potential errors (e.g., user not found)
+                    Log.d(TAG, "Error fetching user: ${e.message}")
                 }
             }
         }

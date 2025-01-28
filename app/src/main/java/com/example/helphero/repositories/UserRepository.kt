@@ -6,7 +6,6 @@ import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 import com.example.helphero.databases.users.UserDao
 import com.example.helphero.models.FirestoreUser
-import com.example.helphero.models.Post
 import com.example.helphero.models.User
 import com.example.helphero.models.toRoomUser
 import com.google.firebase.auth.FirebaseAuth
@@ -95,21 +94,22 @@ class UserRepository(
         firestoreAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val firebaseUser: FirebaseUser? = firestoreAuth.currentUser
-                    firebaseUser?.let { user ->
-                        val newFirestoreUser = FirestoreUser(name, phone, "", email, password)
-                        firestoreDb.collection("users").document(user.uid).set(newFirestoreUser)
-                            .addOnSuccessListener {
-                                saveUserLocally(newFirestoreUser.toRoomUser(user.uid))
-                                onSuccess()
-                            }
-                            .addOnFailureListener { exception ->
-                                onError("Error saving user to Firestore: ${exception.message}")
-                            }
-                    }
+                    val userId = firestoreAuth.currentUser?.uid ?: return@addOnCompleteListener
+                    val user = hashMapOf(
+                        "name" to name,
+                        "email" to email,
+                        "phone" to phone
+                    )
+                    firestoreDb.collection("users").document(userId)
+                        .set(user)
+                        .addOnSuccessListener {
+                            onSuccess()
+                        }
+                        .addOnFailureListener { e ->
+                            onError(e.message ?: "Unknown error")
+                        }
                 } else {
-                    val errorMessage = task.exception?.message ?: "Sign-up failed"
-                    onError(errorMessage)
+                    onError(task.exception?.message ?: "Unknown error")
                 }
             }
     }

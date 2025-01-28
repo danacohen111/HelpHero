@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import com.example.helphero.R
 import com.example.helphero.databases.users.UserDatabase
 import com.example.helphero.databinding.FragmentSignInBinding
 import com.example.helphero.repositories.UserRepository
@@ -53,6 +55,7 @@ class SignInFragment : Fragment() {
 
         binding.btnSignUp.setOnClickListener {
             Toast.makeText(requireContext(), "Navigate to Sign-Up Page", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.signUpFragment)
         }
     }
 
@@ -70,7 +73,7 @@ class SignInFragment : Fragment() {
         viewModel.signInSuccess.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(requireContext(), "Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                // Navigate to the main app screen
+                findNavController().navigate(R.id.homeFragment)
             }
         }
     }

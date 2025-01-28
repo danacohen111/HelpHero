@@ -8,6 +8,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import com.example.helphero.R
 import com.example.helphero.databases.users.UserDatabase
 import com.example.helphero.databinding.FragmentSignUpBinding
 import com.example.helphero.repositories.UserRepository
@@ -53,6 +55,8 @@ class SignUpFragment : Fragment() {
                 Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             } else {
                 viewModel.signUp(name, email, password, phone)
+                Toast.makeText(requireContext(), "Sign-Up Successful", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.homeFragment)
             }
         }
 

@@ -55,12 +55,19 @@ class UserRepository(
         firestoreDb.collection("users").document(userId).get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
-                    val firestoreUser = documentSnapshot.toObject(FirestoreUser::class.java)
-                    firestoreUser?.let {
-                        val roomUser = it.toRoomUser(userId)
-                        saveUserLocally(roomUser)
-                        loginSuccessfull.postValue(true)
-                    } ?: onError("Error parsing user data.")
+                    try {
+                        // Safely parse Firestore data into FirestoreUser
+                        val firestoreUser = documentSnapshot.toObject(FirestoreUser::class.java)
+                        if (firestoreUser != null) {
+                            val roomUser = firestoreUser.toRoomUser(userId)
+                            saveUserLocally(roomUser)
+                            loginSuccessfull.postValue(true)
+                        } else {
+                            onError("User data is empty or malformed in Firestore.")
+                        }
+                    } catch (e: Exception) {
+                        onError("Error parsing user data: ${e.message}")
+                    }
                 } else {
                     onError("User data not found in Firestore.")
                 }
@@ -69,6 +76,7 @@ class UserRepository(
                 onError("Error fetching user: ${exception.message}")
             }
     }
+
 
     /**
      * Save user details to Room database.

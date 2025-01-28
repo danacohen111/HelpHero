@@ -15,6 +15,7 @@ import com.example.helphero.repositories.UserRepository
 import com.example.helphero.viewmodels.SignInViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.helphero.MainActivity
 
 class SignInFragment : Fragment() {
     private var _binding: FragmentSignInBinding? = null
@@ -39,6 +40,8 @@ class SignInFragment : Fragment() {
             this,
             SignInViewModelFactory(userRepository)
         )[SignInViewModel::class.java]
+
+        (activity as MainActivity).hideNavBar()
 
         setupListeners()
         setupObservers()
@@ -81,5 +84,7 @@ class SignInFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        (activity as MainActivity).showNavBar()
     }
 }

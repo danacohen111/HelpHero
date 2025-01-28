@@ -16,6 +16,7 @@ import com.example.helphero.repositories.UserRepository
 import com.example.helphero.viewmodels.SignUpViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.helphero.MainActivity
 
 class SignUpFragment : Fragment() {
 
@@ -44,6 +45,8 @@ class SignUpFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        (activity as MainActivity).hideNavBar()
 
         binding.btnSignup.setOnClickListener {
             val name = binding.etUsername.text.toString()
@@ -82,5 +85,7 @@ class SignUpFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        (activity as MainActivity).showNavBar()
     }
 }

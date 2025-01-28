@@ -75,4 +75,12 @@ class MainActivity : AppCompatActivity() {
     fun isLoggedin() {
         isLoggedIn = auth.currentUser != null
     }
+
+    fun hideNavBar() {
+        bottomNavigationView.visibility = BottomNavigationView.GONE
+    }
+
+    fun showNavBar() {
+        bottomNavigationView.visibility = BottomNavigationView.VISIBLE
+    }
 }

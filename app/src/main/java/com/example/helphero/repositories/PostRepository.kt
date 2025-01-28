@@ -1,6 +1,5 @@
 package com.example.helphero.repositories
 
-import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.WorkerThread
@@ -12,28 +11,20 @@ import com.example.helphero.models.Post
 import com.example.helphero.models.toFirestorePost
 import com.example.helphero.models.toRoomPost
 import com.example.helphero.utils.ImageUtil
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.ktx.storage
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class PostRepository(
     private val firestoreDb: FirebaseFirestore,
-    private val firebaseAuth: FirebaseAuth,
     private val postDao: PostDao,
-    private val contentResolver: ContentResolver
 ) {
     private val TAG = "PostRepository"
     private val COLLECTION = "posts"
-    private val storageRef: StorageReference = Firebase.storage.reference.child("posts")
-
     private var postsListenerRegistration: ListenerRegistration? = null
 
     private val _postsLiveData = MutableLiveData<List<Post>>()
@@ -129,7 +120,7 @@ class PostRepository(
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 Log.d(TAG, "Uploading image for post with id: ${post.postId}")
-                val imageUrl = ImageUtil.uploadImage(post.postId, imageUri, storageRef, contentResolver).toString()
+                val imageUrl = ImageUtil.uploadImage(post.postId, imageUri).toString()
                 post.imageUrl = imageUrl
 
                 val fsPost = post.toFirestorePost()
@@ -153,7 +144,7 @@ class PostRepository(
 
     fun deletePost(id: String) {
         Log.d(TAG, "Deleting post with id: $id")
-        ImageUtil.deleteStorageImage(id, storageRef)
+        ImageUtil.deleteImage(id)
             .addOnSuccessListener {
                 firestoreDb.collection(COLLECTION).document(id).delete()
                     .addOnFailureListener {

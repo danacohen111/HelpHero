@@ -18,7 +18,6 @@ import com.example.helphero.R
 import com.example.helphero.databinding.FragmentAddPostBinding
 import com.example.helphero.utils.ImageUtil
 import com.example.helphero.repositories.PostRepository
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.helphero.databases.posts.PostDatabase
 import com.example.helphero.ui.viewmodels.PostViewModel
@@ -32,9 +31,8 @@ class AddPostFragment : Fragment(R.layout.fragment_add_post) {
         if (uri != null) {
             imageUri = uri
             postViewModel.setImageUri(uri)
-            val contentResolver = requireContext().contentResolver
             val imageBtn: ImageButton = binding.btnAddImage
-            ImageUtil.ShowImgInViewFromGallery(contentResolver, imageBtn, uri)
+            ImageUtil.loadImage(uri, imageBtn)
         } else {
             Toast.makeText(requireContext(), getString(R.string.image_error), Toast.LENGTH_SHORT).show()
         }
@@ -45,12 +43,10 @@ class AddPostFragment : Fragment(R.layout.fragment_add_post) {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentAddPostBinding.inflate(inflater, container, false)
-        val firestoreDb = FirebaseFirestore.getInstance() // Initialize Firestore
-        val firebaseAuth = FirebaseAuth.getInstance() // Initialize FirebaseAuth
-        val database = PostDatabase.getDatabase(requireContext()) // Get the database instance
-        val postDao = database.postDao() // Get the PostDao instance
-        val contentResolver = requireContext().contentResolver
-        val repository = PostRepository(firestoreDb, firebaseAuth, postDao, contentResolver) // Pass required parameters to repository
+        val firestoreDb = FirebaseFirestore.getInstance()
+        val database = PostDatabase.getDatabase(requireContext())
+        val postDao = database.postDao()
+        val repository = PostRepository(firestoreDb, postDao)
         val factory = PostViewModel.PostModelFactory(repository)
         postViewModel = ViewModelProvider(requireActivity(), factory)[PostViewModel::class.java]
 

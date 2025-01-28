@@ -38,11 +38,9 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val firestoreDb = FirebaseFirestore.getInstance()
-        val firebaseAuth = FirebaseAuth.getInstance()
         val database = PostDatabase.getDatabase(requireContext())
         val postDao = database.postDao()
-        val contentResolver = requireContext().contentResolver
-        val repository = PostRepository(firestoreDb, firebaseAuth, postDao, contentResolver)
+        val repository = PostRepository(firestoreDb, postDao)
         val factory = PostViewModel.PostModelFactory(repository)
         postViewModel = ViewModelProvider(requireActivity(), factory)[PostViewModel::class.java]
 

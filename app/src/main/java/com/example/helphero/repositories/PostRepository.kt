@@ -18,6 +18,7 @@ import com.google.firebase.firestore.Query
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PostRepository(
     private val firestoreDb: FirebaseFirestore,
@@ -91,8 +92,8 @@ class PostRepository(
 
                             when (change.type) {
                                 DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
-                                        insert(post) // Only insert if not present
-                                        updatedPosts.add(post)
+                                    insert(post) // Only insert if not present
+                                    updatedPosts.add(post)
                                 }
                                 DocumentChange.Type.REMOVED -> {
                                     delete(post)
@@ -142,18 +143,33 @@ class PostRepository(
         }
     }
 
-    fun deletePost(id: String) {
+   /* fun deletePost(id: String) {
         Log.d(TAG, "Deleting post with id: $id")
-        ImageUtil.deleteImage(id)
-            .addOnSuccessListener {
-                firestoreDb.collection(COLLECTION).document(id).delete()
-                    .addOnFailureListener {
-                        Log.e(TAG, "Failed to delete post document with id: $id", it)
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val imageDeleted = ImageUtil.deleteImage(id)
+                if (imageDeleted) {
+                    firestoreDb.collection(COLLECTION).document(id).delete()
+                        .addOnSuccessListener {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                Log.d(TAG, "Post deleted successfully with id: $id")
+                            }
+                        }
+                        .addOnFailureListener { exception ->
+                            CoroutineScope(Dispatchers.Main).launch {
+                                Log.e(TAG, "Failed to delete post document with id: $id", exception)
+                            }
+                        }
+                } else {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        Log.e(TAG, "Failed to delete image from storage for post with id: $id")
                     }
-                Log.d(TAG, "Post deleted successfully with id: $id")
+                }
+            } catch (e: Exception) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    Log.e(TAG, "Error deleting post with id: $id", e)
+                }
             }
-            .addOnFailureListener {
-                Log.e(TAG, "Failed to delete image from storage for post with id: $id", it)
-            }
-    }
+        }
+    }*/
 }

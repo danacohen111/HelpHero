@@ -32,7 +32,7 @@ fun FirestorePost.toRoomPost(postId: String): Post {
         desc = this.desc,
         imageUrl = this.imageUrl,
         date = this.date,
-        comments = this.comments.map { it.toRoomComment() }
+        comments = this.comments.map { it.toRoomComment(it.commentId) }
     )
 }
 

@@ -65,46 +65,50 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
 
     private fun listenForCommentUpdates() {
         Log.d(TAG, "Listening for comment updates")
-        commentsListenerRegistration = firestoreDb.collection(COLLECTION).orderBy("createdString", Query.Direction.DESCENDING).addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                Log.e(TAG, "Error listening for comment updates", error)
-                return@addSnapshotListener
-            }
-
-            CoroutineScope(Dispatchers.IO).launch {
-                val comments = mutableListOf<Comment>()
-
-                snapshot?.documents?.forEach { document ->
-                    val firestoreComment = document.toObject(FirestoreComment::class.java)
-                    firestoreComment?.let { fsComment ->
-                        val comment = fsComment.toRoomComment()
-                        insert(comment)
-                        comments.add(comment)
-                    }
-                }
-                _commentsLiveData.postValue(comments)
-                Log.d(TAG, "Comment updates received: ${comments.size} comments")
-            }
-        }
-
-        firestoreDb.collection(COLLECTION)
+        commentsListenerRegistration?.remove()
+        commentsListenerRegistration = firestoreDb.collection(COLLECTION)
+            .orderBy("date", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    Log.e(TAG, "Error listening for deleted comments", error)
+                    Log.e(TAG, "Error listening for comment updates", error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot == null || snapshot.documentChanges.isEmpty()) {
+                    Log.d(TAG, "No changes in Firestore snapshot")
                     return@addSnapshotListener
                 }
 
                 CoroutineScope(Dispatchers.IO).launch {
-                    val deletedItems = snapshot?.documentChanges
-                        ?.filter { it.type == DocumentChange.Type.REMOVED }
-                        ?.mapNotNull { change ->
-                            change.document.toObject(FirestoreComment::class.java)
-                                .toRoomComment()
-                        }
+                    val updatedComments = mutableListOf<Comment>()
+                    val removedComments = mutableListOf<Comment>()
 
-                    deletedItems?.let { items ->
-                        items.forEach { delete(it) }
-                        Log.d(TAG, "Deleted comments received: ${items.size} comments")
+                    snapshot.documentChanges.forEach { change ->
+                        try {
+                            val firestoreComment = change.document.toObject(FirestoreComment::class.java)
+                            val comment = firestoreComment.toRoomComment(change.document.id)
+
+                            when (change.type) {
+                                DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
+                                    insert(comment) // Only insert if not present
+                                    updatedComments.add(comment)
+                                }
+                                DocumentChange.Type.REMOVED -> {
+                                    delete(comment)
+                                    removedComments.add(comment)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error processing document change: ${change.document.id}", e)
+                        }
+                    }
+
+                    if (updatedComments.isNotEmpty() || removedComments.isNotEmpty()) {
+                        _commentsLiveData.postValue(commentDao.getAll()) // Refresh Room data
+                        Log.d(
+                            TAG,
+                            "Processed Firestore changes: ${updatedComments.size} added/modified, ${removedComments.size} removed"
+                        )
                     }
                 }
             }

@@ -2,9 +2,11 @@ package com.example.helphero.repositories
 
 import android.content.ContentResolver
 import android.util.Log
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 import com.example.helphero.databases.users.UserDao
 import com.example.helphero.models.FirestoreUser
+import com.example.helphero.models.Post
 import com.example.helphero.models.User
 import com.example.helphero.models.toRoomUser
 import com.google.firebase.auth.FirebaseAuth
@@ -20,8 +22,14 @@ class UserRepository(
     private val contentResolver: ContentResolver,
     private val userDao: UserDao
 ) {
-
+    val TAG = "userRepository"
     val loginSuccessfull = MutableLiveData<Boolean>()
+
+    @WorkerThread
+    suspend fun get(id: String): User {
+        Log.d(TAG, "Fetching user with id: $id")
+        return userDao.get(id)
+    }
 
     /**
      * Login using Firebase Authentication and fetch user details from Firestore.

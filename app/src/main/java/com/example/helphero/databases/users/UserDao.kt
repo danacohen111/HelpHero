@@ -7,12 +7,9 @@ import com.example.helphero.models.User
 
 @Dao
 interface UserDao {
-    @Query("SELECT * FROM users WHERE email = :email")
-    fun get(email: String): User
+    @Query("SELECT * FROM users WHERE userId = :id")
+    fun get(id: String): User
 
     @Update
     fun update(user: User)
-
-//    @Delete
-//    fun delete(id: String)
 }

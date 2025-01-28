@@ -14,7 +14,7 @@ interface PostDao {
     fun getAll(): List<Post>
 
     @Query("SELECT * FROM posts WHERE postId = :id")
-    fun get(id: Int): Post
+    fun get(id: String): Post?
 
     @Query("SELECT * FROM posts WHERE userId = :userId")
     fun getUserPosts(userId: String): List<Post>

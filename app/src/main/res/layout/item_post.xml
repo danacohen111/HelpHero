@@ -10,12 +10,10 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="355dp"
+        android:layout_height="match_parent"
         android:padding="10dp">
 
         <!-- User Info Layout -->
-
-        <!-- Post Info Layout -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/userInfoLayout"
             android:layout_width="126dp"
@@ -24,14 +22,10 @@
             app:layout_constraintEnd_toStartOf="@id/postInfoLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.137"
+            app:layout_constraintVertical_bias="0.025"
             app:layout_constraintWidth_percent="0.4">
 
             <!-- Profile Image -->
-
-            <!-- Username -->
-
-            <!-- Post Timestamp -->
             <ImageView
                 android:id="@+id/imageViewProfile"
                 android:layout_width="40dp"
@@ -56,10 +50,6 @@
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/imageViewProfile" />
-
-            <!-- Phone Icon -->
-
-            <!-- Phone Number -->
 
             <TextView
                 android:id="@+id/textViewPostTime"
@@ -95,10 +85,9 @@
                 android:textSize="12sp"
                 app:layout_constraintStart_toEndOf="@id/imageViewPhoneIcon"
                 app:layout_constraintTop_toTopOf="@id/imageViewPhoneIcon" />
-
-            <!-- Comments Button -->
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Post Info Layout -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/postInfoLayout"
             android:layout_width="222dp"
@@ -107,7 +96,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/userInfoLayout"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.226"
+            app:layout_constraintVertical_bias="0.0"
             app:layout_constraintWidth_percent="0.6">
 
             <!-- Post Image -->
@@ -140,18 +129,60 @@
                 app:layout_constraintTop_toBottomOf="@id/imageViewPostImage" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- "I want to help heroes" Button -->
         <Button
             android:id="@+id/buttonComments"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
             android:background="@android:color/transparent"
             android:text="I want to help heroes →"
             android:textColor="@android:color/black"
+            app:layout_constraintBottom_toTopOf="@id/commentsContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/postInfoLayout"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintVertical_bias="0.098" />
+
+        <!-- Comment Section Container -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/commentsContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/buttonComments">
 
+            <!-- Comment EditText (Write Comment) -->
+            <EditText
+                android:id="@+id/editTextAddComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:hint="Write a comment here..."
+                android:padding="8dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Add Comment Button -->
+            <Button
+                android:id="@+id/buttonAddComment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add Comment"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/editTextAddComment" />
+
+            <!-- RecyclerView for Displaying Comments -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewComments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:overScrollMode="never"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/buttonAddComment" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

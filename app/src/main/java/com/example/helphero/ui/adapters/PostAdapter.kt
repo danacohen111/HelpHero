@@ -138,7 +138,7 @@ class PostAdapter(
                     val newComment = Comment(
                         commentId = UUID.randomUUID().toString(),
                         postId = post.postId,
-                        userId = "currentUserId", //TO DO: Replace with the actual user ID
+                        userId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknownUserId",
                         text = commentText,
                         date = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ENGLISH).format(Date())
                     )

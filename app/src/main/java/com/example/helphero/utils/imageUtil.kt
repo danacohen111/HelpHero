@@ -74,7 +74,6 @@ class ImageUtil private constructor() {
                                     }
 
                                     override fun onPrepareLoad(placeHolderDrawable: android.graphics.drawable.Drawable?) {
-                                        // Do nothing
                                     }
                                 })
 

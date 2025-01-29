@@ -16,8 +16,6 @@ import com.example.helphero.models.User
 import com.example.helphero.ui.viewmodels.UserViewModel
 import com.example.helphero.ui.viewmodels.UserViewModelFactory
 import com.example.helphero.utils.ImageUtil
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class CommentAdapter(
     private var comments: List<Comment>,

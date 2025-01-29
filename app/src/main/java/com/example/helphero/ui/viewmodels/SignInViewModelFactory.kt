@@ -1,9 +1,8 @@
-package com.example.helphero.viewmodels
+package com.example.helphero.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.helphero.repositories.UserRepository
-import com.example.helphero.ui.signin.SignInViewModel
 
 class SignInViewModelFactory(
     private val userRepository: UserRepository,

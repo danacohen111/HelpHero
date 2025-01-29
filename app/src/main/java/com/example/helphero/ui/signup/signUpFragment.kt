@@ -13,10 +13,11 @@ import com.example.helphero.R
 import com.example.helphero.databases.users.UserDatabase
 import com.example.helphero.databinding.FragmentSignUpBinding
 import com.example.helphero.repositories.UserRepository
-import com.example.helphero.viewmodels.SignUpViewModelFactory
+import com.example.helphero.ui.viewmodels.SignUpViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.helphero.MainActivity
+import com.example.helphero.ui.viewmodels.SignUpViewModel
 
 class SignUpFragment : Fragment() {
 

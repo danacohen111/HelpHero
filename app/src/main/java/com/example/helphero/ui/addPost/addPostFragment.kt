@@ -32,11 +32,12 @@ class AddPostFragment : Fragment(R.layout.fragment_add_post) {
             imageUri = uri
             postViewModel.setImageUri(uri)
             val imageBtn: ImageButton = binding.btnAddImage
-            ImageUtil.loadImage(uri, imageBtn)
+            imageBtn.setImageURI(uri)
         } else {
             Toast.makeText(requireContext(), getString(R.string.image_error), Toast.LENGTH_SHORT).show()
         }
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

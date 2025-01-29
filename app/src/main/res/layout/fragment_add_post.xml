@@ -62,6 +62,7 @@
             android:layout_gravity="center"
             android:layout_marginBottom="8dp"
             android:background="@null"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_add_image"
             android:contentDescription="Add Post Image"
             android:stateListAnimator="@null" />

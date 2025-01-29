@@ -1,94 +1,100 @@
 package com.example.helphero.utils
 
-import android.content.ContentResolver
-import android.media.ExifInterface
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
-import com.google.firebase.storage.StorageReference
+import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.UploadCallback
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import com.example.helphero.R
-import com.google.android.gms.tasks.Task
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class ImageUtil private constructor() {
     companion object {
-
         fun loadImage(imageUri: Uri?, imageView: ImageView, placeholderResId: Int = R.drawable.applogo) {
-            Picasso.get()
-                .load(imageUri)
-                .placeholder(placeholderResId)
-                .into(imageView)
-        }
+            imageView.visibility = View.INVISIBLE
 
-        fun loadImageInFeed(imageUri: Uri?, imageView: ImageView, onLoadComplete: () -> Unit) {
             Picasso.get()
                 .load(imageUri)
-                .fit()
-                .centerCrop()
-                .placeholder(R.drawable.applogo)
-                .into(imageView, object : com.squareup.picasso.Callback {
-                    override fun onSuccess() {
-                        onLoadComplete()
+                .into(object : com.squareup.picasso.Target {
+                    override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                        imageView.visibility = View.VISIBLE
+                        imageView.setImageBitmap(bitmap)
                     }
 
-                    override fun onError(e: Exception?) {
-                        onLoadComplete()
+                    override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+                        imageView.visibility = View.VISIBLE
+                        imageView.setImageDrawable(errorDrawable)
+                    }
+
+                    override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
                     }
                 })
         }
 
-        fun ShowImgInViewFromGallery(contentResolver: ContentResolver, imageView: ImageView, imageUri: Uri) {
-            val inputStream = contentResolver.openInputStream(imageUri)
-            if (inputStream != null) {
-                val exif = ExifInterface(inputStream)
-                val rotation =
-                    exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
 
-                val degrees = when (rotation) {
-                    ExifInterface.ORIENTATION_ROTATE_90 -> 90F
-                    ExifInterface.ORIENTATION_ROTATE_180 -> 180F
-                    ExifInterface.ORIENTATION_ROTATE_270 -> 270F
-                    else -> 0F
-                }
-
-                inputStream.close()
-
-                Picasso.get()
-                    .load(imageUri.toString())
-                    .rotate(degrees)
-                    .fit()
-                    .centerCrop()
-                    .into(imageView)
-            } else {
-                Log.d("Picturerequest", "Input stream is null")
-            }
-        }
-
-        suspend fun uploadImage(imageId: String, imageUri: Uri, storageRef: StorageReference, contentResolver: ContentResolver): Uri? {
-            val imageRef = storageRef.child("images/$imageId")
+        suspend fun uploadImage(
+            imageId: String,
+            imageUri: Uri
+        ): Uri? {
             Log.d("ImageUtil", "Starting upload for imageId: $imageId, Uri: $imageUri")
 
             return try {
-                contentResolver.openInputStream(imageUri)?.use { inputStream ->
-                    val uploadTask = imageRef.putStream(inputStream).await()
-                    val downloadUrl = withContext(Dispatchers.IO) {
-                        imageRef.downloadUrl.await()
-                    }
-                    Log.d("ImageUtil", "Upload successful for imageId: $imageId, downloadUrl: $downloadUrl")
-                    downloadUrl
+                suspendCoroutine { continuation ->
+                    MediaManager.get()
+                        .upload(imageUri)
+                        .option("folder", "images") // Folder in Cloudinary
+                        .option("public_id", imageId) // Assign a public ID
+                        .callback(object : UploadCallback {
+                            override fun onStart(requestId: String) {
+                                Log.d("ImageUtil", "Upload started for requestId: $requestId")
+                            }
+
+                            override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
+                                val progress = (bytes.toDouble() / totalBytes) * 100
+                                Log.d("ImageUtil", "Upload progress for requestId: $requestId: $progress%")
+                            }
+
+                            override fun onSuccess(requestId: String, resultData: Map<*, *>) {
+                                val downloadUrl = resultData["secure_url"] as String
+                                Log.d("ImageUtil", "Upload successful: $downloadUrl")
+
+                                Picasso.get().load(downloadUrl).into(object : com.squareup.picasso.Target {
+                                    override fun onBitmapLoaded(bitmap: android.graphics.Bitmap?, from: Picasso.LoadedFrom?) {
+                                        Log.d("ImageUtil", "Image loaded into Picasso: $downloadUrl")
+                                    }
+
+                                    override fun onBitmapFailed(e: java.lang.Exception?, errorDrawable: android.graphics.drawable.Drawable?) {
+                                        Log.e("ImageUtil", "Failed to load image into Picasso: $downloadUrl", e)
+                                    }
+
+                                    override fun onPrepareLoad(placeHolderDrawable: android.graphics.drawable.Drawable?) {
+                                    }
+                                })
+
+                                continuation.resume(Uri.parse(downloadUrl))
+                            }
+
+                            override fun onError(requestId: String, error: com.cloudinary.android.callback.ErrorInfo) {
+                                Log.e("ImageUtil", "Upload failed for requestId: $requestId", Exception(error.description))
+                                continuation.resumeWithException(Exception(error.description))
+                            }
+
+                            override fun onReschedule(requestId: String, error: com.cloudinary.android.callback.ErrorInfo) {
+                                Log.w("ImageUtil", "Upload rescheduled for requestId: $requestId")
+                            }
+                        })
+                        .dispatch()
                 }
             } catch (e: Exception) {
                 Log.e("ImageUtil", "Upload failed for imageId: $imageId, Uri: $imageUri", e)
                 null
             }
-        }
-
-        fun deleteStorageImage(imageId: String, storageRef: StorageReference): Task<Void> {
-            val imageRef = storageRef.child(imageId)
-            return imageRef.delete()
         }
     }
 }

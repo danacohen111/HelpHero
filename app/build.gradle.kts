@@ -19,6 +19,10 @@ android {
         multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "CLOUD_NAME", "\"${project.properties["CLOUD_NAME"] ?: ""}\"")
+        buildConfigField("String", "API_KEY", "\"${project.properties["API_KEY"] ?: ""}\"")
+        buildConfigField("String", "API_SECRET", "\"${project.properties["API_SECRET"] ?: ""}\"")
     }
 
     buildTypes {
@@ -41,6 +45,7 @@ android {
         compose = true
         dataBinding = true
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -93,6 +98,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.squareup.picasso:picasso:2.71828")
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
     implementation("androidx.room:room-runtime:2.5.0")
     implementation ("com.google.code.gson:gson:2.8.9")
     implementation("com.google.android.gms:play-services-auth:20.2.0")

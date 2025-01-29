@@ -37,7 +37,6 @@ import java.util.UUID
 class PostAdapter(
     private val lifecycleOwner: LifecycleOwner,
     private val context: Context,
-    private val contentResolver: ContentResolver
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(DiffCallback()) {
 
     private val userRepository: UserRepository by lazy {
@@ -45,7 +44,7 @@ class PostAdapter(
         val firebaseAuth = FirebaseAuth.getInstance()
         val database = UserDatabase.getDatabase(context)
         val userDao = database.userDao()
-        UserRepository(firestoreDb, firebaseAuth, contentResolver, userDao)
+        UserRepository(firestoreDb, firebaseAuth, userDao)
     }
 
     private val userViewModel: UserViewModel by lazy {

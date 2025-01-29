@@ -1,5 +1,6 @@
 package com.example.helphero.ui.viewmodels
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -20,7 +21,7 @@ class SignUpViewModel(private val userRepository: UserRepository) : ViewModel() 
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> = _errorMessage
 
-    fun signUp(name: String, email: String, password: String, phone: String) {
+    fun signUp(name: String, email: String, password: String, phone: String, profileImageUri: Uri) {
         _errorMessage.postValue("")
         _loading.postValue(true)
 
@@ -31,6 +32,7 @@ class SignUpViewModel(private val userRepository: UserRepository) : ViewModel() 
                     password = password,
                     name = name,
                     phone = phone,
+                    profileImageUri = profileImageUri,
                     onSuccess = {
                         _signUpSuccess.postValue(true)
                     },

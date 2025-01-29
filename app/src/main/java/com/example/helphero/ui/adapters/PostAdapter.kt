@@ -10,13 +10,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.helphero.R
-import com.example.helphero.databinding.ItemPostBinding
 import com.example.helphero.databases.comments.CommentDatabase
 import com.example.helphero.databases.users.UserDatabase
+import com.example.helphero.databinding.ItemPostBinding
 import com.example.helphero.models.Comment
 import com.example.helphero.models.Post
 import com.example.helphero.models.User
@@ -83,18 +83,19 @@ class PostAdapter(
         holder.bind(post)
     }
 
-    inner class PostViewHolder(private val binding: ItemPostBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class PostViewHolder(private val binding: ItemPostBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         private var isCommentsVisible = false // Track visibility of comments section locally
 
         fun bind(post: Post) {
             // Load user info
             userViewModel.getUserById(post.userId)
-            userViewModel.user.observe(lifecycleOwner) { user: User? ->
-                binding.textViewUsername.text = user?.name
-                binding.textViewPhoneNumber.text = user?.phone
-                if (!user?.photoUrl.isNullOrEmpty()) {
+            userViewModel.user.observe(lifecycleOwner) { user: User ->
+                binding.textViewUsername.text = user.name
+                binding.textViewPhoneNumber.text = user.phone
+                if (user.photoUrl.isNotEmpty()) {
                     ImageUtil.loadImage(
-                        Uri.parse(user?.photoUrl),
+                        Uri.parse(user.photoUrl),
                         binding.imageViewProfile,
                         R.drawable.ic_profile_placeholder
                     )
@@ -125,8 +126,13 @@ class PostAdapter(
 
             // Observe comments LiveData and update RecyclerView
             commentViewModel.commentsLiveData.observe(lifecycleOwner) { comments ->
-                val postComments = comments.filter { it.postId == post.postId }.sortedByDescending { it.date }
-                val commentsAdapter = CommentAdapter(postComments, lifecycleOwner, UserViewModelFactory(userRepository))
+                val postComments =
+                    comments.filter { it.postId == post.postId }.sortedByDescending { it.date }
+                val commentsAdapter = CommentAdapter(
+                    postComments,
+                    lifecycleOwner,
+                    UserViewModelFactory(userRepository)
+                )
                 binding.recyclerViewComments.adapter = commentsAdapter
                 binding.recyclerViewComments.layoutManager = LinearLayoutManager(context)
             }
@@ -140,7 +146,10 @@ class PostAdapter(
                         postId = post.postId,
                         userId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknownUserId",
                         text = commentText,
-                        date = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ENGLISH).format(Date())
+                        date = SimpleDateFormat(
+                            "dd/MM/yyyy HH:mm:ss",
+                            Locale.ENGLISH
+                        ).format(Date())
                     )
                     commentViewModel.addComment(newComment)
                     binding.editTextAddComment.text.clear()

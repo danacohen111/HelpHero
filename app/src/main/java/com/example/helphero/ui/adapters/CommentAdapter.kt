@@ -16,8 +16,6 @@ import com.example.helphero.models.User
 import com.example.helphero.ui.viewmodels.UserViewModel
 import com.example.helphero.ui.viewmodels.UserViewModelFactory
 import com.example.helphero.utils.ImageUtil
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class CommentAdapter(
     private var comments: List<Comment>,
@@ -46,11 +44,11 @@ class CommentAdapter(
         ).get(UserViewModel::class.java)
 
         userViewModel.getUserById(comment.userId)
-        userViewModel.user.observe(lifecycleOwner) { user: User? ->
-            holder.userName.text = user?.name
-            if (!user?.photoUrl.isNullOrEmpty()) {
+        userViewModel.user.observe(lifecycleOwner) { user: User ->
+            holder.userName.text = user.name
+            if (user.photoUrl.isNotEmpty()) {
                 ImageUtil.loadImage(
-                    Uri.parse(user?.photoUrl),
+                    Uri.parse(user.photoUrl),
                     holder.profileImage,
                     R.drawable.ic_profile_placeholder
                 )

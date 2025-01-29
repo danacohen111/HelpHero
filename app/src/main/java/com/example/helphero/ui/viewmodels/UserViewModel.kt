@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    private val _user = MutableLiveData<User?>()
-    val user: MutableLiveData<User?> get() = _user
+    private val _user = MutableLiveData<User>()
+    val user: MutableLiveData<User> get() = _user
     var TAG = "UserViewModel"
 
     fun getUserById(userId: String) {
@@ -50,7 +50,6 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
     }
 
 }
-
 
 class UserViewModelFactory(private val userRepository: UserRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

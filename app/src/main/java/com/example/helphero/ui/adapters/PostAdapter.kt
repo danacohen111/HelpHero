@@ -89,12 +89,12 @@ class PostAdapter(
         fun bind(post: Post) {
             // Load user info
             userViewModel.getUserById(post.userId)
-            userViewModel.user.observe(lifecycleOwner) { user: User ->
-                binding.textViewUsername.text = user.name
-                binding.textViewPhoneNumber.text = user.phone
-                if (user.photoUrl.isNotEmpty()) {
+            userViewModel.user.observe(lifecycleOwner) { user: User? ->
+                binding.textViewUsername.text = user?.name
+                binding.textViewPhoneNumber.text = user?.phone
+                if (!user?.photoUrl.isNullOrEmpty()) {
                     ImageUtil.loadImage(
-                        Uri.parse(user.photoUrl),
+                        Uri.parse(user?.photoUrl),
                         binding.imageViewProfile,
                         R.drawable.ic_profile_placeholder
                     )

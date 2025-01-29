@@ -1,16 +1,13 @@
 package com.example.helphero.ui.viewmodels
 
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.helphero.models.User
 import com.example.helphero.repositories.UserRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
@@ -19,20 +16,16 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
     var TAG = "UserViewModel"
 
     fun getUserById(userId: String) {
-        viewModelScope.launch {
-            if (isAnonymousUser(userId)) {
-                _user.value = getDefaultUser()
-            } else {
-                try {
-                    val fetchedUser = withContext(Dispatchers.IO) {
-                        userRepository.get(userId)
-                    }
-                    _user.value = fetchedUser
-                } catch (e: Exception) {
-                    Log.d(TAG, "Error fetching user: ${e.message}")
-                }
-            }
+        if (isAnonymousUser(userId)) {
+            _user.value = getDefaultUser()
+            return
         }
+
+        userRepository.get(
+            userId,
+            onSuccess = { fetchedUser -> _user.postValue(fetchedUser) },
+            onError = { error -> Log.d(TAG, "Error fetching user: $error") }
+        )
     }
 
     private fun isAnonymousUser(userId: String): Boolean {
@@ -49,7 +42,15 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
             password = "default_password"
         )
     }
+
+    fun updateUser(user: User, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            userRepository.updateUser(user, onSuccess, onError)
+        }
+    }
+
 }
+
 
 class UserViewModelFactory(private val userRepository: UserRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

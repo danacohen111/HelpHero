@@ -46,11 +46,11 @@ class CommentAdapter(
         ).get(UserViewModel::class.java)
 
         userViewModel.getUserById(comment.userId)
-        userViewModel.user.observe(lifecycleOwner) { user: User ->
-            holder.userName.text = user.name
-            if (user.photoUrl.isNotEmpty()) {
+        userViewModel.user.observe(lifecycleOwner) { user: User? ->
+            holder.userName.text = user?.name
+            if (!user?.photoUrl.isNullOrEmpty()) {
                 ImageUtil.loadImage(
-                    Uri.parse(user.photoUrl),
+                    Uri.parse(user?.photoUrl),
                     holder.profileImage,
                     R.drawable.ic_profile_placeholder
                 )

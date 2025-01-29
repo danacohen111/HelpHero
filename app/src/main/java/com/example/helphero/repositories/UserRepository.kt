@@ -14,6 +14,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.example.helphero.models.toFirestoreUser
+import kotlinx.coroutines.withContext
 
 class UserRepository(
     private val firestoreDb: FirebaseFirestore,
@@ -25,9 +27,39 @@ class UserRepository(
     val loginSuccessfull = MutableLiveData<Boolean>()
 
     @WorkerThread
-    fun get(id: String): User? {
+    fun get(id: String, onSuccess: (User) -> Unit, onError: (String) -> Unit) {
         Log.d(TAG, "Fetching user with id: $id")
-        return userDao.get(id)
+
+        // Try fetching user from Room database first
+        CoroutineScope(Dispatchers.IO).launch {
+            val localUser = userDao.get(id)
+            if (localUser != null) {
+                Log.d(TAG, "User found in Room database")
+                onSuccess(localUser)
+                return@launch
+            }
+
+            // If not found in Room, fetch from Firestore
+            firestoreDb.collection("users").document(id).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val firestoreUser = document.toObject(FirestoreUser::class.java)
+                        firestoreUser?.let {
+                            val roomUser = it.toRoomUser(id)
+                            saveUserLocally(roomUser) // Cache in Room
+                            Log.d(TAG, "User fetched from Firestore and cached locally")
+                            onSuccess(roomUser)
+                        } ?: onError("Error parsing Firestore user data")
+                    } else {
+                        Log.w(TAG, "User not found in Firestore")
+                        onError("User not found")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error fetching user from Firestore: ${e.message}")
+                    onError("Error fetching user: ${e.message}")
+                }
+        }
     }
 
     /**
@@ -103,14 +135,21 @@ class UserRepository(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val userId = firestoreAuth.currentUser?.uid ?: return@addOnCompleteListener
-                    val user = hashMapOf(
-                        "name" to name,
-                        "email" to email,
-                        "phone" to phone
+                    val user = User(
+                        userId = userId,
+                        name = name,
+                        phone = phone,
+                        photoUrl = "",
+                        email = email,
+                        password = password
                     )
+
+                    val firestoreUser = user.toFirestoreUser() // Convert to FirestoreUser
+
                     firestoreDb.collection("users").document(userId)
-                        .set(user)
+                        .set(firestoreUser) // Save to Firestore
                         .addOnSuccessListener {
+                            saveUserLocally(user) // Also save to Room database
                             onSuccess()
                         }
                         .addOnFailureListener { e ->
@@ -121,5 +160,27 @@ class UserRepository(
                 }
             }
     }
+
+    fun updateUser(user: User, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val userId = user.userId
+        val firestoreUser = user.toFirestoreUser()
+
+        firestoreDb.collection("users").document(userId)
+            .set(firestoreUser)
+            .addOnSuccessListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        userDao.update(user) // Update Room database
+                        withContext(Dispatchers.Main) { onSuccess() }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) { onError("Error updating local DB: ${e.message}") }
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                onError("Firestore update failed: ${exception.message}")
+            }
+    }
+
 
 }

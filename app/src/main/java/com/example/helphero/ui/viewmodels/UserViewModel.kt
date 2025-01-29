@@ -14,8 +14,8 @@ import kotlinx.coroutines.withContext
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    private val _user = MutableLiveData<User>()
-    val user: LiveData<User> get() = _user
+    private val _user = MutableLiveData<User?>()
+    val user: MutableLiveData<User?> get() = _user
     var TAG = "UserViewModel"
 
     fun getUserById(userId: String) {

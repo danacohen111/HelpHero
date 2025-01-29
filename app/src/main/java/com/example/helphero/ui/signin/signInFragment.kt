@@ -7,12 +7,16 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import com.example.helphero.R
 import com.example.helphero.databases.users.UserDatabase
 import com.example.helphero.databinding.FragmentSignInBinding
 import com.example.helphero.repositories.UserRepository
-import com.example.helphero.viewmodels.SignInViewModelFactory
+import com.example.helphero.ui.viewmodels.SignInViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.helphero.MainActivity
+import com.example.helphero.ui.viewmodels.SignInViewModel
 
 class SignInFragment : Fragment() {
     private var _binding: FragmentSignInBinding? = null
@@ -38,6 +42,8 @@ class SignInFragment : Fragment() {
             SignInViewModelFactory(userRepository)
         )[SignInViewModel::class.java]
 
+        (activity as MainActivity).hideNavBar()
+
         setupListeners()
         setupObservers()
 
@@ -53,6 +59,7 @@ class SignInFragment : Fragment() {
 
         binding.btnSignUp.setOnClickListener {
             Toast.makeText(requireContext(), "Navigate to Sign-Up Page", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.signUpFragment)
         }
     }
 
@@ -70,7 +77,7 @@ class SignInFragment : Fragment() {
         viewModel.signInSuccess.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(requireContext(), "Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                // Navigate to the main app screen
+                findNavController().navigate(R.id.homeFragment)
             }
         }
     }
@@ -78,5 +85,7 @@ class SignInFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        (activity as MainActivity).showNavBar()
     }
 }

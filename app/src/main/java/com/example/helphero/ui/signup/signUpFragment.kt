@@ -28,7 +28,7 @@ class SignUpFragment : Fragment() {
     private var _binding: FragmentSignUpBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: SignUpViewModel
-    private lateinit var profileImageUri: Uri
+    private var profileImageUri: Uri? = null
 
     private val pickProfileImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
@@ -74,10 +74,11 @@ class SignUpFragment : Fragment() {
             val phone = binding.etPhone.text.toString()
 
             if (isInputValid(name, password, email, phone)) {
-                // Include the profile image URI in the sign-up process
-                viewModel.signUp(name, email, password, phone, profileImageUri)
-                Toast.makeText(requireContext(), "Sign-Up Successful", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.homeFragment)
+                profileImageUri?.let { uri ->
+                    viewModel.signUp(name, email, password, phone, uri)
+                    Toast.makeText(requireContext(), "Sign-Up Successful", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.homeFragment)
+                } ?: Toast.makeText(requireContext(), "Please select a profile image", Toast.LENGTH_SHORT).show()
             }
         }
 

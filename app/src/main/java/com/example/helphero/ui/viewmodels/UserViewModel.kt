@@ -23,7 +23,10 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
         userRepository.get(
             userId,
-            onSuccess = { fetchedUser -> _user.postValue(fetchedUser) },
+            onSuccess = { fetchedUser ->
+                _user.postValue(fetchedUser)
+                Log.d(TAG, "Fetched user: ${fetchedUser.name}")
+            },
             onError = { error -> Log.d(TAG, "Error fetching user: $error") }
         )
     }

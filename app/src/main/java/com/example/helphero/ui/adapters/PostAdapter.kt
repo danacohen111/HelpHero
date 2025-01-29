@@ -1,6 +1,5 @@
 package com.example.helphero.ui.adapters
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
@@ -88,18 +87,19 @@ class PostAdapter(
 
         fun bind(post: Post) {
             // Load user info
-            userViewModel.getUserById(post.userId)
-            userViewModel.user.observe(lifecycleOwner) { user: User ->
-                binding.textViewUsername.text = user.name
-                binding.textViewPhoneNumber.text = user.phone
-                if (user.photoUrl.isNotEmpty()) {
-                    ImageUtil.loadImage(
-                        Uri.parse(user.photoUrl),
-                        binding.imageViewProfile,
-                        R.drawable.ic_profile_placeholder
-                    )
-                } else {
-                    binding.imageViewProfile.setImageResource(R.drawable.ic_profile_placeholder)
+            userViewModel.getUserById(post.userId).observe(lifecycleOwner) { user: User? ->
+                user?.let {
+                    binding.textViewUsername.text = it.name
+                    binding.textViewPhoneNumber.text = it.phone
+                    if (it.photoUrl.isNotEmpty()) {
+                        ImageUtil.loadImage(
+                            Uri.parse(it.photoUrl),
+                            binding.imageViewProfile,
+                            R.drawable.ic_profile_placeholder
+                        )
+                    } else {
+                        binding.imageViewProfile.setImageResource(R.drawable.ic_profile_placeholder)
+                    }
                 }
             }
 

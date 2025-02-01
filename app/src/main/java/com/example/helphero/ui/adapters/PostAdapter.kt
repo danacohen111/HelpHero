@@ -29,6 +29,7 @@ import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import androidx.lifecycle.Observer
 import java.util.Date
 import java.util.Locale
 import java.util.UUID

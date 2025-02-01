@@ -41,8 +41,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
         _imageUri.value = uri
     }
 
-    // TO DO: Check the authenticated user and save the post
-    fun savePost(title: String, desc: String, imageUri: Uri) {
+    fun savePost(title: String, desc: String, imageUri: Uri, location: String) {
         val postId: String = UUID.randomUUID().toString()
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
 
@@ -55,6 +54,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
                     desc = desc,
                     imageUrl = "",
                     date = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.ENGLISH).format(Date()),
+                    location = location,
                     comments = emptyList()
                 )
                 repository.insertPost(post, imageUri)

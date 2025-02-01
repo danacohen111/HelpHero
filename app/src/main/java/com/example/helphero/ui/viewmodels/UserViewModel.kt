@@ -12,26 +12,31 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    private val _user = MutableLiveData<User?>()
-    val user: LiveData<User?> get() = _user
+    private val userCache = mutableMapOf<String, MutableLiveData<User?>>()
     var TAG = "UserViewModel"
 
     fun getUserById(userId: String): LiveData<User?> {
+        if (userCache.containsKey(userId)) {
+            return userCache[userId]!!
+        }
+
+        val liveData = MutableLiveData<User?>()
+        userCache[userId] = liveData
+
         if (isAnonymousUser(userId)) {
-            _user.value = getDefaultUser()
+            liveData.value = getDefaultUser()
         } else {
             userRepository.get(
                 userId,
                 onSuccess = { fetchedUser ->
-                    _user.postValue(fetchedUser)
+                    liveData.postValue(fetchedUser)
                     Log.d(TAG, "Fetched user: ${fetchedUser.name}")
                 },
                 onError = { error -> Log.d(TAG, "Error fetching user: $error") }
             )
         }
-        return user
+        return liveData
     }
-
 
     private fun isAnonymousUser(userId: String): Boolean {
         return userId == "anonymous"
@@ -53,7 +58,6 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
             userRepository.updateUser(user, onSuccess, onError)
         }
     }
-
 }
 
 class UserViewModelFactory(private val userRepository: UserRepository) : ViewModelProvider.Factory {

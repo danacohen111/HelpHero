@@ -1,104 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center"
+    android:background="@drawable/background">
 
-    <!-- App Name -->
+    <!-- App Logo -->
     <TextView
         android:id="@+id/tvAppName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:text="HelpHero"
-        android:textColor="@color/blue"
-        android:textSize="24sp"
+        android:textColor="@color/colorPrimary"
+        android:textSize="32sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/ivLogo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- App Logo -->
+    <!-- Icon -->
     <ImageView
         android:id="@+id/ivLogo"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        android:contentDescription="@string/app_name"
         android:src="@drawable/applogo"
-        app:layout_constraintBottom_toTopOf="@+id/etEmail"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:contentDescription="Hero Icon"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="24dp" />
 
-    <!-- Email Field -->
+    <!-- Input Fields -->
     <EditText
-        android:id="@+id/etEmail"
-        android:layout_width="0dp"
+        android:id="@+id/et_email"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/gray"
-        android:drawablePadding="8dp"
-        android:hint="Email"
+        android:hint="Email..."
         android:inputType="textEmailAddress"
         android:padding="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/etPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ivLogo" />
+        android:background="@color/colorBackground" />
 
-    <!-- Password Field -->
     <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="0dp"
+        android:id="@+id/et_password"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/gray"
-        android:drawablePadding="8dp"
-        android:hint="Password"
+        android:hint="Password..."
         android:inputType="textPassword"
         android:padding="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnSignIn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etEmail" />
+        android:background="@color/colorBackground"
+        android:layout_marginTop="8dp" />
 
     <!-- Sign In Button -->
     <Button
         android:id="@+id/btnSignIn"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/blue"
-        android:padding="12dp"
-        android:text="Sign In"
+        android:backgroundTint="@color/colorPrimary"
+        android:text="Continue"
         android:textColor="@android:color/white"
-        app:layout_constraintBottom_toTopOf="@+id/btnSignUp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etPassword" />
+        android:layout_marginTop="16dp"
+        android:padding="12dp" />
 
     <!-- Sign Up Button -->
     <Button
-        android:id="@+id/btnSignUp"
+        android:id="@+id/btnSignup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/gray"
+        android:backgroundTint="@color/colorPrimary"
         android:text="Sign Up"
         android:textColor="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnSignIn" />
+        android:layout_marginTop="16dp"
+        android:padding="12dp" />
 
+    <!-- Footer Icon -->
     <ImageView
         android:id="@+id/footer_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:src="@drawable/israel"
         android:contentDescription="Footer Icon"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="24dp" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

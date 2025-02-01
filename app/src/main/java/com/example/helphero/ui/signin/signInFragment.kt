@@ -57,7 +57,7 @@ class SignInFragment : Fragment() {
             viewModel.signIn(email, password)
         }
 
-        binding.btnSignUp.setOnClickListener {
+        binding.btnSignup.setOnClickListener {
             Toast.makeText(requireContext(), "Navigate to Sign-Up Page", Toast.LENGTH_SHORT).show()
             findNavController().navigate(R.id.signUpFragment)
         }

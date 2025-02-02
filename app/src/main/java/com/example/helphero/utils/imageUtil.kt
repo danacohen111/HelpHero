@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.ImageView
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.UploadCallback
+import com.example.helphero.BuildConfig
 import com.squareup.picasso.Picasso
 import com.example.helphero.R
 import kotlin.coroutines.resume
@@ -16,6 +17,8 @@ import kotlin.coroutines.suspendCoroutine
 
 class ImageUtil private constructor() {
     companion object {
+        private const val TAG = "ImageUtil"
+
         fun loadImage(imageUri: Uri?, imageView: ImageView, placeholderResId: Int = R.drawable.applogo) {
             imageView.visibility = View.INVISIBLE
 
@@ -37,12 +40,11 @@ class ImageUtil private constructor() {
                 })
         }
 
-
         suspend fun uploadImage(
             imageId: String,
             imageUri: Uri
         ): Uri? {
-            Log.d("ImageUtil", "Starting upload for imageId: $imageId, Uri: $imageUri")
+            Log.d(TAG, "Starting upload for imageId: $imageId, Uri: $imageUri")
 
             return try {
                 suspendCoroutine { continuation ->
@@ -52,25 +54,25 @@ class ImageUtil private constructor() {
                         .option("public_id", imageId) // Assign a public ID
                         .callback(object : UploadCallback {
                             override fun onStart(requestId: String) {
-                                Log.d("ImageUtil", "Upload started for requestId: $requestId")
+                                Log.d(TAG, "Upload started for requestId: $requestId")
                             }
 
                             override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
                                 val progress = (bytes.toDouble() / totalBytes) * 100
-                                Log.d("ImageUtil", "Upload progress for requestId: $requestId: $progress%")
+                                Log.d(TAG, "Upload progress for requestId: $requestId: $progress%")
                             }
 
                             override fun onSuccess(requestId: String, resultData: Map<*, *>) {
                                 val downloadUrl = resultData["secure_url"] as String
-                                Log.d("ImageUtil", "Upload successful: $downloadUrl")
+                                Log.d(TAG, "Upload successful: $downloadUrl")
 
                                 Picasso.get().load(downloadUrl).into(object : com.squareup.picasso.Target {
                                     override fun onBitmapLoaded(bitmap: android.graphics.Bitmap?, from: Picasso.LoadedFrom?) {
-                                        Log.d("ImageUtil", "Image loaded into Picasso: $downloadUrl")
+                                        Log.d(TAG, "Image loaded into Picasso: $downloadUrl")
                                     }
 
                                     override fun onBitmapFailed(e: java.lang.Exception?, errorDrawable: android.graphics.drawable.Drawable?) {
-                                        Log.e("ImageUtil", "Failed to load image into Picasso: $downloadUrl", e)
+                                        Log.e(TAG, "Failed to load image into Picasso: $downloadUrl", e)
                                     }
 
                                     override fun onPrepareLoad(placeHolderDrawable: android.graphics.drawable.Drawable?) {
@@ -81,19 +83,51 @@ class ImageUtil private constructor() {
                             }
 
                             override fun onError(requestId: String, error: com.cloudinary.android.callback.ErrorInfo) {
-                                Log.e("ImageUtil", "Upload failed for requestId: $requestId", Exception(error.description))
+                                Log.e(TAG, "Upload failed for requestId: $requestId", Exception(error.description))
                                 continuation.resumeWithException(Exception(error.description))
                             }
 
                             override fun onReschedule(requestId: String, error: com.cloudinary.android.callback.ErrorInfo) {
-                                Log.w("ImageUtil", "Upload rescheduled for requestId: $requestId")
+                                Log.w(TAG, "Upload rescheduled for requestId: $requestId")
                             }
                         })
                         .dispatch()
                 }
             } catch (e: Exception) {
-                Log.e("ImageUtil", "Upload failed for imageId: $imageId, Uri: $imageUri", e)
+                Log.e(TAG, "Upload failed for imageId: $imageId, Uri: $imageUri", e)
                 null
+            }
+        }
+
+        suspend fun deleteImage(imageId: String) {
+            Log.d(TAG, "Deleting image with id: $imageId")
+
+            try {
+                suspendCoroutine<Unit> { continuation ->
+                    MediaManager.get()
+                        .cloudinary
+                        .uploader()
+                        .destroy("images/$imageId", mapOf("invalidate" to true)) { result: Map<*, *>, error: Exception? ->
+                            if (error != null) {
+                                Log.e(TAG, "Failed to delete image: ${error.message}")
+                                continuation.resumeWithException(Exception(error.message))
+                            } else {
+                                Log.d(TAG, "Image deleted successfully")
+                                continuation.resume(Unit)
+                            }
+                        }
+                }
+
+                // Get Cloudinary base URL from BuildConfig
+                val cloudinaryBaseUrl = BuildConfig.CLOUDINARY_BASE_URL
+                val imageUrl = "$cloudinaryBaseUrl/images/$imageId"
+
+                // Clear image from Picasso cache
+                Picasso.get().invalidate(imageUrl)
+                Log.d(TAG, "Picasso cache invalidated for: $imageUrl")
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting image", e)
             }
         }
     }

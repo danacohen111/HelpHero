@@ -69,6 +69,18 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
         }
     }
 
+    fun updatePost(postId: String, title: String?, desc: String?, imageUri: Uri?, location: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updatePost(postId, title, desc, imageUri, location)
+        }
+    }
+
+    fun deletePost(postId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deletePost(postId)
+        }
+    }
+
     class PostModelFactory(private val repository: PostRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(PostViewModel::class.java)) {

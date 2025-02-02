@@ -18,6 +18,7 @@ import com.google.firebase.firestore.Query
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class PostRepository(
     private val firestoreDb: FirebaseFirestore,
@@ -52,6 +53,12 @@ class PostRepository(
     suspend fun insert(post: Post) {
         Log.d(TAG, "Inserting post into Room database")
         postDao.insert(post)
+    }
+
+    @WorkerThread
+    suspend fun deleteById(postId: String) {
+        Log.d(TAG, "Deleting post by id from Room database")
+        postDao.deleteById(postId)
     }
 
     @WorkerThread
@@ -153,6 +160,99 @@ class PostRepository(
                     }
             } catch (e: Exception) {
                 Log.e(TAG, "Exception during post insertion", e)
+                _postSuccessful.postValue(false)
+            } finally {
+                _loading.postValue(false)
+            }
+        }
+    }
+
+    fun updatePost(
+        postId: String,
+        title: String?,
+        desc: String?,
+        imageUri: Uri?,
+        location: String?
+    ) {
+        _loading.postValue(true)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val postRef = firestoreDb.collection(COLLECTION).document(postId)
+
+                // Fetch existing post from Firestore
+                val snapshot = postRef.get().await()
+                if (!snapshot.exists()) {
+                    Log.e(TAG, "Post not found: $postId")
+                    return@launch
+                }
+
+                val existingPost = snapshot.toObject(FirestorePost::class.java) ?: return@launch
+                val updates = mutableMapOf<String, Any>()
+
+                title?.let { updates["title"] = it }
+                desc?.let { updates["desc"] = it }
+                location?.let { updates["location"] = it }
+
+                // Handle image update
+                if (imageUri != null) {
+                    // Delete old image if it exists
+                    existingPost.imageUrl.takeIf { it.isNotEmpty() }?.let { oldImageUrl ->
+                        ImageUtil.deleteImage(oldImageUrl)
+                    }
+                    // Upload new image
+                    val newImageUrl = ImageUtil.uploadImage(postId, imageUri).toString()
+                    updates["imageUrl"] = newImageUrl
+                }
+
+                postRef.update(updates)
+                    .addOnSuccessListener {
+                        Log.d(TAG, "Post updated successfully: $postId")
+                        _postSuccessful.postValue(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Error updating post: $postId", e)
+                        _postSuccessful.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception during post update", e)
+                _postSuccessful.postValue(false)
+            } finally {
+                _loading.postValue(false)
+            }
+        }
+    }
+
+    fun deletePost(postId: String) {
+        _loading.postValue(true)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val postRef = firestoreDb.collection(COLLECTION).document(postId)
+
+                // Fetch existing post to get image URL
+                val snapshot = postRef.get().await()
+                if (snapshot.exists()) {
+                    val existingPost = snapshot.toObject(FirestorePost::class.java)
+                    existingPost?.imageUrl?.takeIf { it.isNotEmpty() }?.let { oldImageUrl ->
+                        ImageUtil.deleteImage(oldImageUrl)
+                    }
+                }
+
+                postRef.delete()
+                    .addOnSuccessListener {
+                        Log.d(TAG, "Post deleted successfully: $postId")
+                        CoroutineScope(Dispatchers.IO).launch {
+                            postDao.deleteById(postId) // Remove from Room DB
+                        }
+                        _postSuccessful.postValue(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Error deleting post: $postId", e)
+                        _postSuccessful.postValue(false)
+                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception during post deletion", e)
                 _postSuccessful.postValue(false)
             } finally {
                 _loading.postValue(false)

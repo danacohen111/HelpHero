@@ -32,6 +32,14 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     private val _imageUri = MutableLiveData<Uri?>()
     val imageUri: LiveData<Uri?> get() = _imageUri
 
+    // Filtered posts for the current user
+    private val _userPosts = MutableLiveData<List<Post>>()
+    val userPosts: LiveData<List<Post>> get() = _userPosts
+
+    init {
+        fetchUserPosts()
+    }
+
     fun resetForm() {
         _postSuccessful.value = false
         _imageUri.value = null
@@ -39,6 +47,13 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
 
     fun setImageUri(uri: Uri) {
         _imageUri.value = uri
+    }
+
+    private fun fetchUserPosts() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId != "anonymous") {
+            _userPosts.value = postsLiveData.value?.filter { it.userId == userId }
+        }
     }
 
     fun savePost(title: String, desc: String, imageUri: Uri, location: String) {
@@ -58,6 +73,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
                     comments = emptyList()
                 )
                 repository.insertPost(post, imageUri)
+                fetchUserPosts() // Refresh user posts
                 withContext(Dispatchers.Main) {
                     _postSuccessful.value = true
                 }
@@ -72,12 +88,14 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     fun updatePost(postId: String, title: String?, desc: String?, imageUri: Uri?, location: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.updatePost(postId, title, desc, imageUri, location)
+            fetchUserPosts() // Refresh user posts
         }
     }
 
     fun deletePost(postId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deletePost(postId)
+            fetchUserPosts() // Refresh user posts
         }
     }
 

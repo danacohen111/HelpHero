@@ -107,7 +107,8 @@ class ImageUtil private constructor() {
                     MediaManager.get()
                         .cloudinary
                         .uploader()
-                        .destroy("images/$imageId", mapOf("invalidate" to true)) { result: Map<*, *>, error: Exception? ->
+                        .destroy("images/$imageId", mapOf("invalidate" to true))
+                        .let { result, error ->
                             if (error != null) {
                                 Log.e(TAG, "Failed to delete image: ${error.message}")
                                 continuation.resumeWithException(Exception(error.message))

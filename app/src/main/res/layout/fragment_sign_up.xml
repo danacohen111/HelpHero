@@ -25,14 +25,17 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Icon -->
-    <ImageView
-        android:id="@+id/ivLogo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+    <ImageButton
+        android:id="@+id/btnAddProfileImage"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
         android:src="@drawable/applogo"
-        android:contentDescription="Hero Icon"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="24dp" />
+        android:contentDescription="Add Post Image"
+        android:stateListAnimator="@null" />
 
     <!-- Input Fields -->
     <EditText

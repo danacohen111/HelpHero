@@ -1,6 +1,7 @@
 package com.example.helphero.repositories
 
 import android.content.ContentResolver
+import android.net.Uri
 import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
@@ -15,12 +16,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.example.helphero.models.toFirestoreUser
+import com.example.helphero.utils.ImageUtil
 import kotlinx.coroutines.withContext
 
 class UserRepository(
     private val firestoreDb: FirebaseFirestore,
     private val firestoreAuth: FirebaseAuth,
-    private val contentResolver: ContentResolver,
     private val userDao: UserDao
 ) {
     val TAG = "userRepository"
@@ -128,35 +129,61 @@ class UserRepository(
         password: String,
         name: String,
         phone: String,
+        profileImageUri: Uri,  // Removed nullability from profile image URI
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
+        Log.d(TAG, "Starting sign up process for email: $email")
         firestoreAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val userId = firestoreAuth.currentUser?.uid ?: return@addOnCompleteListener
+                    Log.d(TAG, "User created with userId: $userId")
                     val user = User(
                         userId = userId,
                         name = name,
                         phone = phone,
-                        photoUrl = "",
+                        photoUrl = "",  // Initially, set photoUrl to an empty string
                         email = email,
                         password = password
                     )
 
-                    val firestoreUser = user.toFirestoreUser() // Convert to FirestoreUser
+                    val imageId = "profile_${userId}"
+                    Log.d(TAG, "Uploading profile image with imageId: $imageId")
 
-                    firestoreDb.collection("users").document(userId)
-                        .set(firestoreUser) // Save to Firestore
-                        .addOnSuccessListener {
-                            saveUserLocally(user) // Also save to Room database
-                            onSuccess()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
+                            if (imageUrl != null) {
+                                user.photoUrl = imageUrl.toString()
+                                Log.d(TAG, "Profile image uploaded successfully: $imageUrl")
+
+                                val firestoreUser = user.toFirestoreUser()
+
+                                firestoreDb.collection("users").document(userId)
+                                    .set(firestoreUser)
+                                    .addOnSuccessListener {
+                                        Log.d(TAG, "User data saved to Firestore")
+                                        saveUserLocally(user)  // Save user locally in Room
+                                        onSuccess()
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e(TAG, "Error saving user data to Firestore: ${e.message}")
+                                        onError(e.message ?: "Unknown error")
+                                    }
+                            } else {
+                                Log.e(TAG, "Failed to upload image")
+                                onError("Failed to upload image")
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error uploading image: ${e.message}")
+                            onError("Error uploading image: ${e.message}")
                         }
-                        .addOnFailureListener { e ->
-                            onError(e.message ?: "Unknown error")
-                        }
+                    }
                 } else {
-                    onError(task.exception?.message ?: "Unknown error")
+                    val errorMessage = task.exception?.message ?: "Unknown error"
+                    Log.e(TAG, "Error creating user: $errorMessage")
+                    onError(errorMessage)
                 }
             }
     }
@@ -181,6 +208,4 @@ class UserRepository(
                 onError("Firestore update failed: ${exception.message}")
             }
     }
-
-
 }

@@ -1,6 +1,5 @@
 package com.example.helphero.ui.adapters
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
@@ -30,6 +29,7 @@ import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import androidx.lifecycle.Observer
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -37,7 +37,6 @@ import java.util.UUID
 class PostAdapter(
     private val lifecycleOwner: LifecycleOwner,
     private val context: Context,
-    private val contentResolver: ContentResolver
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(DiffCallback()) {
 
     private val userRepository: UserRepository by lazy {
@@ -45,7 +44,7 @@ class PostAdapter(
         val firebaseAuth = FirebaseAuth.getInstance()
         val database = UserDatabase.getDatabase(context)
         val userDao = database.userDao()
-        UserRepository(firestoreDb, firebaseAuth, contentResolver, userDao)
+        UserRepository(firestoreDb, firebaseAuth, userDao)
     }
 
     private val userViewModel: UserViewModel by lazy {
@@ -89,18 +88,19 @@ class PostAdapter(
 
         fun bind(post: Post) {
             // Load user info
-            userViewModel.getUserById(post.userId)
-            userViewModel.user.observe(lifecycleOwner) { user: User ->
-                binding.textViewUsername.text = user.name
-                binding.textViewPhoneNumber.text = user.phone
-                if (user.photoUrl.isNotEmpty()) {
-                    ImageUtil.loadImage(
-                        Uri.parse(user.photoUrl),
-                        binding.imageViewProfile,
-                        R.drawable.ic_profile_placeholder
-                    )
-                } else {
-                    binding.imageViewProfile.setImageResource(R.drawable.ic_profile_placeholder)
+            userViewModel.getUserById(post.userId).observe(lifecycleOwner) { user: User? ->
+                user?.let {
+                    binding.textViewUsername.text = it.name
+                    binding.textViewPhoneNumber.text = it.phone
+                    if (it.photoUrl.isNotEmpty()) {
+                        ImageUtil.loadImage(
+                            Uri.parse(it.photoUrl),
+                            binding.imageViewProfile,
+                            R.drawable.ic_profile_placeholder
+                        )
+                    } else {
+                        binding.imageViewProfile.setImageResource(R.drawable.ic_profile_placeholder)
+                    }
                 }
             }
 

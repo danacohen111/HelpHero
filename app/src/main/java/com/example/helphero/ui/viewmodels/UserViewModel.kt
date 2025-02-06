@@ -1,6 +1,7 @@
 package com.example.helphero.ui.viewmodels
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,21 +12,30 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    private val _user = MutableLiveData<User>()
-    val user: MutableLiveData<User> get() = _user
+    private val userCache = mutableMapOf<String, MutableLiveData<User?>>()
     var TAG = "UserViewModel"
 
-    fun getUserById(userId: String) {
-        if (isAnonymousUser(userId)) {
-            _user.value = getDefaultUser()
-            return
+    fun getUserById(userId: String): LiveData<User?> {
+        if (userCache.containsKey(userId)) {
+            return userCache[userId]!!
         }
 
-        userRepository.get(
-            userId,
-            onSuccess = { fetchedUser -> _user.postValue(fetchedUser) },
-            onError = { error -> Log.d(TAG, "Error fetching user: $error") }
-        )
+        val liveData = MutableLiveData<User?>()
+        userCache[userId] = liveData
+
+        if (isAnonymousUser(userId)) {
+            liveData.value = getDefaultUser()
+        } else {
+            userRepository.get(
+                userId,
+                onSuccess = { fetchedUser ->
+                    liveData.postValue(fetchedUser)
+                    Log.d(TAG, "Fetched user: ${fetchedUser.name}")
+                },
+                onError = { error -> Log.d(TAG, "Error fetching user: $error") }
+            )
+        }
+        return liveData
     }
 
     private fun isAnonymousUser(userId: String): Boolean {
@@ -48,7 +58,6 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
             userRepository.updateUser(user, onSuccess, onError)
         }
     }
-
 }
 
 class UserViewModelFactory(private val userRepository: UserRepository) : ViewModelProvider.Factory {

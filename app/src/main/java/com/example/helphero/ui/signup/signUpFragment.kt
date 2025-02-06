@@ -1,10 +1,14 @@
 package com.example.helphero.ui.signup
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -24,6 +28,17 @@ class SignUpFragment : Fragment() {
     private var _binding: FragmentSignUpBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: SignUpViewModel
+    private var profileImageUri: Uri? = null
+
+    private val pickProfileImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            profileImageUri = uri
+            val imageBtn: ImageButton = binding.btnAddProfileImage
+            imageBtn.setImageURI(uri)
+        } else {
+            Toast.makeText(requireContext(), getString(R.string.image_error), Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,7 +49,6 @@ class SignUpFragment : Fragment() {
         val userRepository = UserRepository(
             firestoreDb = FirebaseFirestore.getInstance(),
             firestoreAuth = FirebaseAuth.getInstance(),
-            contentResolver = requireContext().contentResolver,
             userDao = userDao
         )
         viewModel = ViewModelProvider(
@@ -49,6 +63,10 @@ class SignUpFragment : Fragment() {
 
         (activity as MainActivity).hideNavBar()
 
+        binding.btnAddProfileImage.setOnClickListener {
+            pickProfileImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+
         binding.btnSignup.setOnClickListener {
             val name = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()
@@ -56,9 +74,11 @@ class SignUpFragment : Fragment() {
             val phone = binding.etPhone.text.toString()
 
             if (isInputValid(name, password, email, phone)) {
-                viewModel.signUp(name, email, password, phone)
-                Toast.makeText(requireContext(), "Sign-Up Successful", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.homeFragment)
+                profileImageUri?.let { uri ->
+                    viewModel.signUp(name, email, password, phone, uri)
+                    Toast.makeText(requireContext(), "Sign-Up Successful", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.homeFragment)
+                } ?: Toast.makeText(requireContext(), "Please select a profile image", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -77,8 +97,12 @@ class SignUpFragment : Fragment() {
                 false
             }
 
-            password.isEmpty() -> {
-                Toast.makeText(context, "Please enter a password", Toast.LENGTH_SHORT).show()
+            password.isEmpty() || password.length < 6 -> {
+                Toast.makeText(
+                    context,
+                    "Please enter a password with at least 6 characters",
+                    Toast.LENGTH_SHORT
+                ).show()
                 false
             }
 
@@ -94,10 +118,14 @@ class SignUpFragment : Fragment() {
                 false
             }
 
+            profileImageUri == null -> {
+                Toast.makeText(context, "Please select a profile image", Toast.LENGTH_SHORT).show()
+                false
+            }
+
             else -> true
         }
     }
-
 
     private fun observeViewModel() {
         viewModel.signUpSuccess.observe(viewLifecycleOwner, Observer { success ->

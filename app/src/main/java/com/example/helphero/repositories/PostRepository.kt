@@ -169,10 +169,8 @@ class PostRepository(
 
     fun updatePost(
         postId: String,
-        title: String?,
         desc: String?,
-        imageUri: Uri?,
-        location: String?
+        imageUri: Uri?
     ) {
         _loading.postValue(true)
 
@@ -190,9 +188,7 @@ class PostRepository(
                 val existingPost = snapshot.toObject(FirestorePost::class.java) ?: return@launch
                 val updates = mutableMapOf<String, Any>()
 
-                title?.let { updates["title"] = it }
                 desc?.let { updates["desc"] = it }
-                location?.let { updates["location"] = it }
 
                 // Handle image update
                 if (imageUri != null) {
@@ -235,7 +231,13 @@ class PostRepository(
                 if (snapshot.exists()) {
                     val existingPost = snapshot.toObject(FirestorePost::class.java)
                     existingPost?.imageUrl?.takeIf { it.isNotEmpty() }?.let { oldImageUrl ->
-                        ImageUtil.deleteImage(oldImageUrl)
+                        try {
+                            // Try to delete the image
+                            Log.d(TAG, "Attempting to delete image at URL: $oldImageUrl")
+                            ImageUtil.deleteImage(oldImageUrl)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error deleting image: $oldImageUrl", e)
+                        }
                     }
                 }
 

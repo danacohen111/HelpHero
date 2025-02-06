@@ -1,13 +1,7 @@
 package com.example.helphero.ui.viewmodels
 
-import android.content.ContentValues.TAG
 import android.net.Uri
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.helphero.models.Post
 import com.example.helphero.repositories.PostRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -15,11 +9,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 
 class PostViewModel(private val repository: PostRepository) : ViewModel() {
+
+    private val userId: String = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
 
     val postsLiveData: LiveData<List<Post>> = repository.postsLiveData
 
@@ -37,7 +31,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     val userPosts: LiveData<List<Post>> get() = _userPosts
 
     init {
-        fetchUserPosts()
+        fetchUserPosts(userId)
     }
 
     fun resetForm() {
@@ -49,16 +43,14 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
         _imageUri.value = uri
     }
 
-    private fun fetchUserPosts() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        if (userId != "anonymous") {
-            _userPosts.value = postsLiveData.value?.filter { it.userId == userId }
+    fun fetchUserPosts(userId: String) {
+        postsLiveData.observeForever { posts ->
+            _userPosts.postValue(posts.filter { it.userId == userId })
         }
     }
 
     fun savePost(title: String, desc: String, imageUri: Uri, location: String) {
         val postId: String = UUID.randomUUID().toString()
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -73,29 +65,48 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
                     comments = emptyList()
                 )
                 repository.insertPost(post, imageUri)
-                fetchUserPosts() // Refresh user posts
                 withContext(Dispatchers.Main) {
                     _postSuccessful.value = true
+                    fetchUserPosts(userId)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    _postSuccessful.value = false
                     _loading.value = false
                 }
             }
         }
     }
 
-    fun updatePost(postId: String, title: String?, desc: String?, imageUri: Uri?, location: String?) {
+    fun updatePost(postId: String, desc: String?, imageUri: Uri?) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updatePost(postId, title, desc, imageUri, location)
-            fetchUserPosts() // Refresh user posts
+            try {
+                repository.updatePost(postId, desc, imageUri)
+                withContext(Dispatchers.Main) {
+                    _postSuccessful.value = true
+                    fetchUserPosts(userId)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _postSuccessful.value = false
+                }
+            }
         }
     }
 
     fun deletePost(postId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deletePost(postId)
-            fetchUserPosts() // Refresh user posts
+            try {
+                repository.deletePost(postId)
+                withContext(Dispatchers.Main) {
+                    _postSuccessful.value = true
+                    fetchUserPosts(userId)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _postSuccessful.value = false
+                }
+            }
         }
     }
 

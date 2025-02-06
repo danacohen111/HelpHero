@@ -37,6 +37,8 @@ import java.util.UUID
 class PostAdapter(
     private val lifecycleOwner: LifecycleOwner,
     private val context: Context,
+    private val onEditClick: (Post) -> Unit,
+    private val onDeleteClick: (Post) -> Unit
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(DiffCallback()) {
 
     private val userRepository: UserRepository by lazy {
@@ -154,6 +156,26 @@ class PostAdapter(
                     commentViewModel.addComment(newComment)
                     binding.editTextAddComment.text.clear()
                 }
+            }
+
+            // Handle Edit Button Click
+            binding.buttonEditPost.setOnClickListener {
+                onEditClick(post)
+            }
+
+            // Handle Delete Button Click
+            binding.buttonDeletePost.setOnClickListener {
+                onDeleteClick(post)
+            }
+
+            // Only show Edit and Delete buttons if the current user is the one who created the post
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+            if (currentUserId == post.userId) {
+                binding.buttonEditPost.visibility = View.VISIBLE
+                binding.buttonDeletePost.visibility = View.VISIBLE
+            } else {
+                binding.buttonEditPost.visibility = View.GONE
+                binding.buttonDeletePost.visibility = View.GONE
             }
         }
     }

@@ -35,8 +35,7 @@ class ImageUtil private constructor() {
                         imageView.setImageDrawable(errorDrawable)
                     }
 
-                    override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
-                    }
+                    override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
                 })
         }
 
@@ -75,8 +74,7 @@ class ImageUtil private constructor() {
                                         Log.e(TAG, "Failed to load image into Picasso: $downloadUrl", e)
                                     }
 
-                                    override fun onPrepareLoad(placeHolderDrawable: android.graphics.drawable.Drawable?) {
-                                    }
+                                    override fun onPrepareLoad(placeHolderDrawable: android.graphics.drawable.Drawable?) {}
                                 })
 
                                 continuation.resume(Uri.parse(downloadUrl))
@@ -95,7 +93,7 @@ class ImageUtil private constructor() {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Upload failed for imageId: $imageId, Uri: $imageUri", e)
-                null
+                throw e
             }
         }
 
@@ -103,32 +101,29 @@ class ImageUtil private constructor() {
             Log.d(TAG, "Deleting image with id: $imageId")
 
             try {
-                suspendCoroutine<Unit> { continuation ->
-                    MediaManager.get()
-                        .cloudinary
-                        .uploader()
-                        .destroy("images/$imageId", mapOf("invalidate" to true))
-                        .let { result, error ->
-                            if (error != null) {
-                                Log.e(TAG, "Failed to delete image: ${error.message}")
-                                continuation.resumeWithException(Exception(error.message))
-                            } else {
-                                Log.d(TAG, "Image deleted successfully")
-                                continuation.resume(Unit)
-                            }
-                        }
+                // Ensure the imageId is properly formatted
+                val formattedImageId = "images/$imageId"
+                Log.d(TAG, "Formatted Image ID for deletion: $formattedImageId")
+
+                val options = mapOf("invalidate" to true)
+                val result = MediaManager.get().cloudinary.uploader().destroy(formattedImageId, options)
+
+                if (result.isNotEmpty() && result.containsKey("error")) {
+                    Log.e(TAG, "Error deleting image: ${result["error"]}")
+                    throw Exception("Error deleting image: ${result["error"]}")
+                } else {
+                    Log.d(TAG, "Image deleted successfully")
                 }
 
-                // Get Cloudinary base URL from BuildConfig
+                // Invalidate the image cache from Picasso
                 val cloudinaryBaseUrl = BuildConfig.CLOUDINARY_BASE_URL
-                val imageUrl = "$cloudinaryBaseUrl/images/$imageId"
-
-                // Clear image from Picasso cache
+                val imageUrl = "$cloudinaryBaseUrl/$formattedImageId"
                 Picasso.get().invalidate(imageUrl)
                 Log.d(TAG, "Picasso cache invalidated for: $imageUrl")
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error deleting image", e)
+                throw e
             }
         }
     }

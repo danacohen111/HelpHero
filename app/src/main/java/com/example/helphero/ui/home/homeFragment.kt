@@ -51,7 +51,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter(viewLifecycleOwner, requireContext(), requireContext().contentResolver)
+        postAdapter = PostAdapter(viewLifecycleOwner, requireContext())
         binding.recyclerViewPosts.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter

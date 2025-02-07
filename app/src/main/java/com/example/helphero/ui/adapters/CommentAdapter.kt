@@ -30,6 +30,11 @@ class CommentAdapter(
         val profileImage: ImageView = itemView.findViewById(R.id.commentImageViewProfile)
     }
 
+    private val userViewModel: UserViewModel by lazy {
+        ViewModelProvider(lifecycleOwner as ViewModelStoreOwner, userViewModelFactory)
+            .get(UserViewModel::class.java)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false)
         return CommentViewHolder(view)
@@ -38,22 +43,19 @@ class CommentAdapter(
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
 
-        val userViewModel = ViewModelProvider(
-            lifecycleOwner as ViewModelStoreOwner,
-            userViewModelFactory
-        ).get(UserViewModel::class.java)
-
-        userViewModel.getUserById(comment.userId)
-        userViewModel.user.observe(lifecycleOwner) { user: User ->
-            holder.userName.text = user.name
-            if (user.photoUrl.isNotEmpty()) {
-                ImageUtil.loadImage(
-                    Uri.parse(user.photoUrl),
-                    holder.profileImage,
-                    R.drawable.ic_profile_placeholder
-                )
-            } else {
-                holder.profileImage.setImageResource(R.drawable.ic_profile_placeholder)
+        // Observe user data only when binding the view
+        userViewModel.getUserById(comment.userId).observe(lifecycleOwner) { user: User? ->
+            user?.let {
+                holder.userName.text = it.name
+                if (it.photoUrl.isNotEmpty()) {
+                    ImageUtil.loadImage(
+                        Uri.parse(it.photoUrl),
+                        holder.profileImage,
+                        R.drawable.ic_profile_placeholder
+                    )
+                } else {
+                    holder.profileImage.setImageResource(R.drawable.ic_profile_placeholder)
+                }
             }
         }
 
@@ -64,5 +66,4 @@ class CommentAdapter(
     override fun getItemCount(): Int {
         return comments.size
     }
-
 }

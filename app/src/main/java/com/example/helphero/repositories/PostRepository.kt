@@ -18,7 +18,6 @@ import com.google.firebase.firestore.Query
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class PostRepository(
     private val firestoreDb: FirebaseFirestore,
@@ -66,10 +65,15 @@ class PostRepository(
     }
 
     private fun listenForPostUpdates() {
+        // Avoid adding the listener more than once
+        if (postsListenerRegistration != null) return
+
         Log.d(TAG, "Starting to listen for post updates")
-        postsListenerRegistration?.remove()
         postsListenerRegistration = firestoreDb.collection(COLLECTION)
-            .orderBy("date", Query.Direction.DESCENDING)
+            .orderBy(
+                "date",
+                Query.Direction.DESCENDING
+            ) // Ensures posts are sorted by date in Firestore
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     Log.e(TAG, "Error listening for post updates", error)
@@ -78,6 +82,8 @@ class PostRepository(
 
                 if (snapshot == null || snapshot.documentChanges.isEmpty()) {
                     Log.d(TAG, "No changes in Firestore snapshot")
+                    // If there are no posts in the database, make sure to show the "No posts yet" message
+                    _postsLiveData.postValue(emptyList())
                     return@addSnapshotListener
                 }
 
@@ -92,9 +98,10 @@ class PostRepository(
 
                             when (change.type) {
                                 DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
-                                    insert(post) // Only insert if not present
+                                    insert(post)
                                     updatedPosts.add(post)
                                 }
+
                                 DocumentChange.Type.REMOVED -> {
                                     delete(post)
                                     removedPosts.add(post)
@@ -105,16 +112,23 @@ class PostRepository(
                         }
                     }
 
-                    if (updatedPosts.isNotEmpty() || removedPosts.isNotEmpty()) {
-                        _postsLiveData.postValue(postDao.getAll()) // Refresh Room data
-                        Log.d(
-                            TAG,
-                            "Processed Firestore changes: ${updatedPosts.size} added/modified, ${removedPosts.size} removed"
-                        )
+                    // Update LiveData with sorted posts
+                    val sortedPosts = postDao.getAll().sortedBy { it.date }
+                    if (sortedPosts.isNotEmpty()) {
+                        _postsLiveData.postValue(sortedPosts)
+                    } else {
+                        // If there are no posts in the database, show the "No posts yet" message
+                        _postsLiveData.postValue(emptyList())
                     }
+
+                    Log.d(
+                        TAG,
+                        "Processed Firestore changes: ${updatedPosts.size} added/modified, ${removedPosts.size} removed"
+                    )
                 }
             }
     }
+
 
     fun insertPost(post: Post, imageUri: Uri) {
         _loading.postValue(true)
@@ -129,6 +143,9 @@ class PostRepository(
                     .addOnSuccessListener {
                         Log.d(TAG, "Post successfully inserted with id: ${post.postId}")
                         _postSuccessful.postValue(true)
+
+                        // Trigger re-sync from Firestore after inserting a new post
+                        listenForPostUpdates() // Refresh the posts after insertion
                     }
                     .addOnFailureListener { e ->
                         Log.e(TAG, "Error inserting post with id: ${post.postId}", e)
@@ -143,3 +160,4 @@ class PostRepository(
         }
     }
 }
+

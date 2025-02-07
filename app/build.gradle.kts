@@ -23,6 +23,7 @@ android {
         buildConfigField("String", "CLOUD_NAME", "\"${project.properties["CLOUD_NAME"] ?: ""}\"")
         buildConfigField("String", "API_KEY", "\"${project.properties["API_KEY"] ?: ""}\"")
         buildConfigField("String", "API_SECRET", "\"${project.properties["API_SECRET"] ?: ""}\"")
+        buildConfigField("String", "NOMINATIM_URL", "\"${project.properties["NOMINATIM_URL"] ?: ""}\"")
     }
 
     buildTypes {
@@ -104,6 +105,9 @@ dependencies {
     implementation("androidx.room:room-runtime:2.5.0")
     implementation ("com.google.code.gson:gson:2.8.9")
     implementation("com.google.android.gms:play-services-auth:20.2.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
     kapt("androidx.room:room-compiler:2.5.0")
 
 }

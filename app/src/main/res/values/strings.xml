@@ -7,4 +7,5 @@
     <string name="enter_title">Enter post title</string>
     <string name="enter_desc">Enter post description</string>
     <string name="image_error">Can\'t display image</string>
+    <string name="enter_location">enter location</string>
 </resources>

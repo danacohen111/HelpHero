@@ -1,12 +1,16 @@
 package com.example.helphero.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.helphero.models.Comment
 import com.example.helphero.repositories.CommentRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CommentViewModel(private val repository: CommentRepository) : ViewModel() {
+
+    val TAG = "CommentViewModel"
 
     val commentsLiveData: LiveData<List<Comment>> = repository.commentsLiveData
 
@@ -17,19 +21,49 @@ class CommentViewModel(private val repository: CommentRepository) : ViewModel() 
     val loading: LiveData<Boolean> get() = _loading
 
     fun addComment(comment: Comment) {
+        _loading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
-            repository.insertComment(comment)
-            _commentSuccessful.postValue(true)
+            try {
+                repository.insertComment(comment)
+                withContext(Dispatchers.Main) {
+                    _commentSuccessful.value = true
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error adding comment", e)
+                    _commentSuccessful.value = false
+                }
+            } finally {
+                _loading.postValue(false)
+            }
         }
     }
 
     fun deleteComment(commentId: String) {
+        _loading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteComment(commentId)
-            _commentSuccessful.postValue(true)
+            try {
+                repository.deleteComment(commentId)
+                withContext(Dispatchers.Main) {
+                    _commentSuccessful.value = true
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error deleting comment", e)
+                    _commentSuccessful.value = false
+                }
+            } finally {
+                _loading.postValue(false)
+            }
         }
     }
-}
+
+    suspend fun getCommentsForPost(postId: String): List<Comment> {
+        return withContext(Dispatchers.IO) {
+            repository.getCommentsForPost(postId)
+        }
+    }
+
     class CommentViewModelFactory(private val repository: CommentRepository) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(CommentViewModel::class.java)) {
@@ -39,3 +73,4 @@ class CommentViewModel(private val repository: CommentRepository) : ViewModel() 
             throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
+}

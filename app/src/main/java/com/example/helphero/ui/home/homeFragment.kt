@@ -81,15 +81,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun updatePost(post: Post) {
-        // Call ViewModel to update the post
-        // postViewModel.updatePost(post.postId, post.title, desc, imageUri, location)
-        Toast.makeText(requireContext(), "Post Updated: ${post.postId}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Go to profile to update post", Toast.LENGTH_SHORT).show()
     }
 
     private fun deletePost(post: Post) {
-        // Call ViewModel to delete the post
-        postViewModel.deletePost(post.postId)
-        Toast.makeText(requireContext(), "Post Deleted: ${post.postId}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Go to profile to delete post", Toast.LENGTH_SHORT).show()
     }
 
     private fun handleWindowInsets() {

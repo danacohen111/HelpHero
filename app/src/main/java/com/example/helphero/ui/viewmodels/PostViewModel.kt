@@ -1,6 +1,7 @@
 package com.example.helphero.ui.viewmodels
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.helphero.models.Post
 import com.example.helphero.repositories.PostRepository
@@ -84,12 +85,12 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
                 repository.updatePost(postId, desc, imageUri)
                 withContext(Dispatchers.Main) {
                     _postSuccessful.value = true
-                    fetchUserPosts(userId)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _postSuccessful.value = false
                 }
+                Log.e("PostViewModel", "Error updating post: ${e.message}")
             }
         }
     }

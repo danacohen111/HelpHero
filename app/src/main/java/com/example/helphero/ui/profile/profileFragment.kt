@@ -1,9 +1,9 @@
 package com.example.helphero.ui.profile
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,33 +12,45 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.helphero.R
+import com.example.helphero.databases.comments.CommentDatabase
 import com.example.helphero.databinding.FragmentProfileBinding
 import com.example.helphero.models.Post
+import com.example.helphero.repositories.CommentRepository
 import com.example.helphero.ui.adapters.PostAdapter
+import com.example.helphero.ui.viewmodels.CommentViewModel
 import com.example.helphero.ui.viewmodels.PostViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
+    private val TAG = "ProfileFragment"
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    // ViewModel reference
     private val postViewModel: PostViewModel by activityViewModels()
-
-    // Uri for new selected image
     private var selectedImageUri: Uri? = null
+    private var pendingPostUpdate: Pair<String, String>? = null
 
-    // Register image picker activity result launcher
-    private val imagePickerLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let {
-                selectedImageUri = it
-            }
-        }
+    private val commentRepository: CommentRepository by lazy {
+        val firestoreDb = FirebaseFirestore.getInstance()
+        val firebaseAuth = FirebaseAuth.getInstance()
+        val commentDao = CommentDatabase.getDatabase(requireContext()).commentDao()
+        CommentRepository(firestoreDb, firebaseAuth, commentDao)
+    }
+
+    private val commentViewModel: CommentViewModel by lazy {
+        ViewModelProvider(
+            requireActivity(),
+            CommentViewModel.CommentViewModelFactory(commentRepository)
+        )[CommentViewModel::class.java]
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,74 +69,89 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             findNavController().navigate(R.id.signInFragment)
         }
 
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-        if (currentUserId != null) {
-            postViewModel.fetchUserPosts(currentUserId) // Load the current user's posts
-        }
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        postViewModel.fetchUserPosts(currentUserId)
 
-        // Observe user posts and display them
+        val adapter = PostAdapter(
+            lifecycleOwner = viewLifecycleOwner,
+            context = requireContext(),
+            onEditClick = { post -> updatePost(post) },
+            onDeleteClick = { post -> deletePost(post) }
+        )
+        binding.recyclerViewUserPosts.adapter = adapter
+        binding.recyclerViewUserPosts.layoutManager = LinearLayoutManager(requireContext())
+
         postViewModel.userPosts.observe(viewLifecycleOwner) { posts ->
-            // Only set the adapter if it hasn't been set already
-            if (binding.recyclerViewUserPosts.adapter == null) {
-                val adapter = PostAdapter(
-                    lifecycleOwner = viewLifecycleOwner,
-                    context = requireContext(),
-                    onEditClick = { post -> updatePost(post) }, // Changed to update
-                    onDeleteClick = { post -> deletePost(post) }
-                )
-                binding.recyclerViewUserPosts.adapter = adapter
-                binding.recyclerViewUserPosts.layoutManager = LinearLayoutManager(requireContext())
-            }
-
-            // Update the adapter with the user's posts
-            (binding.recyclerViewUserPosts.adapter as PostAdapter).submitList(posts)
+            adapter.submitList(posts)
         }
     }
 
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            selectedImageUri = uri
+            Log.d(TAG, "Image picked: $selectedImageUri")
+
+            pendingPostUpdate?.let { (postId, newDescription) ->
+                postViewModel.updatePost(postId, newDescription, selectedImageUri)
+                observePostUpdate()
+                pendingPostUpdate = null
+            }
+        }
+
     private fun updatePost(post: Post) {
-        // Create the AlertDialog to enter new description
         val builder = AlertDialog.Builder(requireContext())
         val input = EditText(requireContext())
-        input.setText(post.desc) // Pre-fill the description with existing value
+        input.setText(post.desc)
+
         builder.setView(input)
             .setTitle("Update Post Description")
-            .setPositiveButton("OK") { dialog, _ ->
+            .setPositiveButton("OK") { _, _ ->
                 val newDescription = input.text.toString()
 
-                // Show image picker for the new image
-                imagePickerLauncher.launch("image/*")
-
-                // Observe the result of the image picker first
-                imagePickerLauncher.launch("image/*") // Launch image picker before updating the post
-                postViewModel.postSuccessful.observe(viewLifecycleOwner) { isSuccess ->
-                    if (isSuccess) {
-                        // Once image is picked, update the post with the new description and imageUri
-                        postViewModel.updatePost(post.postId, newDescription, selectedImageUri)
-                        Toast.makeText(requireContext(), "Post Updated", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(requireContext(), "Not a good package", Toast.LENGTH_SHORT).show()
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Choose New Picture")
+                    .setMessage("Would you like to select a new image for this post?")
+                    .setPositiveButton("Select Image") { _, _ ->
+                        pendingPostUpdate = post.postId to newDescription
+                        imagePickerLauncher.launch("image/*")
                     }
-                }
-
-                // Dismiss the dialog after the image picker interaction
-                dialog.dismiss()
+                    .setNegativeButton("No, keep existing") { _, _ ->
+                        postViewModel.updatePost(post.postId, newDescription, null)
+                        observePostUpdate()
+                    }
+                    .show()
             }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
+            .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun deletePost(post: Post) {
-        // Call ViewModel to delete the post
-        postViewModel.deletePost(post.postId)
-
-        // Observe the result of the delete
+    private fun observePostUpdate() {
         postViewModel.postSuccessful.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
-                Toast.makeText(requireContext(), "Post Deleted: ${post.postId}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Post updated successfully", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(requireContext(), "Not a good package", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Failed to update post", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun deletePost(post: Post) {
+        lifecycleScope.launch {
+            val comments = commentViewModel.getCommentsForPost(post.postId)
+            comments.forEach { comment ->
+                commentViewModel.deleteComment(comment.commentId)
+            }
+            postViewModel.deletePost(post.postId)
+            observePostDeletion()
+        }
+    }
+
+    private fun observePostDeletion() {
+        postViewModel.postSuccessful.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
+                Toast.makeText(requireContext(), "Post deleted successfully", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "Failed to delete post", Toast.LENGTH_SHORT).show()
             }
         }
     }

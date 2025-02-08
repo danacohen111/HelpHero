@@ -22,4 +22,5 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
             isLoading.value = false
         })
     }
+
 }

@@ -9,4 +9,6 @@
     <color name="menuTextColor">#2AAA2A</color>
 
     <color name="gray">#808080</color> <!-- Gray Color -->
+
+    <color name="green">#00FF00</color>
 </resources>

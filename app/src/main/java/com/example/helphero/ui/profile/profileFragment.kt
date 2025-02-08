@@ -12,10 +12,14 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.InvalidationTracker
 import com.example.helphero.R
 import com.example.helphero.databases.comments.CommentDatabase
 import com.example.helphero.databinding.FragmentProfileBinding
@@ -94,7 +98,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             pendingPostUpdate?.let { (postId, newDescription) ->
                 postViewModel.updatePost(postId, newDescription, selectedImageUri)
                 pendingPostUpdate = null
-                observePostUpdate()
             }
         }
 
@@ -124,26 +127,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             .show()
     }
 
-    private fun observePostUpdate() {
-        postViewModel.postSuccessful.observe(viewLifecycleOwner) { isSuccess ->
-            if (isSuccess) {
-                Toast.makeText(requireContext(), "Post updated successfully", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(requireContext(), "Failed to update post", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun observePostDeletion() {
-        postViewModel.postSuccessful.observe(viewLifecycleOwner) { isSuccess ->
-            if (isSuccess) {
-                Toast.makeText(requireContext(), "Post deleted successfully", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(requireContext(), "Failed to delete post", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     private fun deletePost(post: Post) {
         lifecycleScope.launch {
             val comments = commentViewModel.getCommentsForPost(post.postId)
@@ -151,7 +134,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 commentViewModel.deleteComment(comment.commentId)
             }
             postViewModel.deletePost(post.postId)
-            observePostDeletion()
         }
     }
 

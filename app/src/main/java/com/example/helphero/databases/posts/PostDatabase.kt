@@ -7,8 +7,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.helphero.models.Post
 import com.example.helphero.converters.Converters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Post::class], version = 1, exportSchema = false)
+@Database(entities = [Post::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class PostDatabase: RoomDatabase() {
 
@@ -25,9 +27,17 @@ abstract class PostDatabase: RoomDatabase() {
                     context.applicationContext,
                     PostDatabase::class.java,
                     "posts"
-                ).build()
+                )
+                    .addMigrations(MIGRATION_1_2)
+                    .build()
                 INSTANCE = instance
                 instance
+            }
+        }
+
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE posts ADD COLUMN location TEXT NOT NULL DEFAULT ''")
             }
         }
     }

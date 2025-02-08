@@ -1,6 +1,5 @@
 package com.example.helphero.repositories
 
-import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.WorkerThread
@@ -8,15 +7,15 @@ import androidx.lifecycle.MutableLiveData
 import com.example.helphero.databases.users.UserDao
 import com.example.helphero.models.FirestoreUser
 import com.example.helphero.models.User
+import com.example.helphero.models.toFirestoreUser
 import com.example.helphero.models.toRoomUser
+import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.example.helphero.models.toFirestoreUser
-import com.example.helphero.utils.ImageUtil
 import kotlinx.coroutines.withContext
 
 class UserRepository(
@@ -168,7 +167,10 @@ class UserRepository(
                                         onSuccess()
                                     }
                                     .addOnFailureListener { e ->
-                                        Log.e(TAG, "Error saving user data to Firestore: ${e.message}")
+                                        Log.e(
+                                            TAG,
+                                            "Error saving user data to Firestore: ${e.message}"
+                                        )
                                         onError(e.message ?: "Unknown error")
                                     }
                             } else {
@@ -188,24 +190,48 @@ class UserRepository(
             }
     }
 
-    fun updateUser(user: User, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun updateUser(
+        user: User,
+        profileImageUri: Uri,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         val userId = user.userId
-        val firestoreUser = user.toFirestoreUser()
+        val imageId = "profile_${userId}"
+        Log.d(TAG, "Uploading profile image with imageId: $imageId")
 
-        firestoreDb.collection("users").document(userId)
-            .set(firestoreUser)
-            .addOnSuccessListener {
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        userDao.update(user) // Update Room database
-                        withContext(Dispatchers.Main) { onSuccess() }
-                    } catch (e: Exception) {
-                        withContext(Dispatchers.Main) { onError("Error updating local DB: ${e.message}") }
-                    }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
+                if (imageUrl != null) {
+                    user.photoUrl = imageUrl.toString()
+                    Log.d(TAG, "Profile image uploaded successfully: $imageUrl")
+
+                    val firestoreUser = user.toFirestoreUser()
+
+                    firestoreDb.collection("users").document(userId)
+                        .set(firestoreUser)
+                        .addOnSuccessListener {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                try {
+                                    userDao.update(user) // Update Room database
+                                    withContext(Dispatchers.Main) { onSuccess() }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) { onError("Error updating local DB: ${e.message}") }
+                                }
+                            }
+                        }
+                        .addOnFailureListener { exception ->
+                            onError("Firestore update failed: ${exception.message}")
+                        }
+                } else {
+                    Log.e(TAG, "Failed to upload image")
+                    onError("Failed to upload image")
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error uploading image: ${e.message}")
+                onError("Error uploading image: ${e.message}")
             }
-            .addOnFailureListener { exception ->
-                onError("Firestore update failed: ${exception.message}")
-            }
+        }
     }
 }

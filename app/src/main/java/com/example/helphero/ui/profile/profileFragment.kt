@@ -19,6 +19,7 @@ import com.example.helphero.models.User
 import com.example.helphero.repositories.UserRepository
 import com.example.helphero.ui.viewmodels.ProfileViewModel
 import com.example.helphero.ui.viewmodels.ProfileViewModelFactory
+import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
@@ -79,11 +80,11 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             binding.etPhone.setText(user.phone)
 
             if (!user.photoUrl.isNullOrEmpty()) {
-                Picasso.get()
-                    .load(user.photoUrl)
-                    .fit()
-                    .placeholder(R.drawable.ic_profile_placeholder)
-                    .into(binding.btnProfileImage)
+                ImageUtil.loadImage(
+                    Uri.parse(user.photoUrl),
+                    binding.btnProfileImage,
+                    R.drawable.ic_profile_placeholder
+                )
             } else {
                 binding.btnProfileImage.setImageResource(R.drawable.ic_profile_placeholder)
             }
@@ -101,7 +102,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         binding.btnSaveProfile.setOnClickListener {
             currentUser?.let { user ->
                 val updatedPhone = binding.etPhone.text.toString()
-                val updatedUser = user.copy(phone = updatedPhone)
+                val updatedUser = user.copy(phone = updatedPhone, photoUrl = imageUri.toString())
                 profileViewModel.updateUserProfile(updatedUser)
             } ?: Toast.makeText(requireContext(), "User data not available", Toast.LENGTH_SHORT)
                 .show()

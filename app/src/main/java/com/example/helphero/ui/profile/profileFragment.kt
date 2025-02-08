@@ -93,8 +93,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
             pendingPostUpdate?.let { (postId, newDescription) ->
                 postViewModel.updatePost(postId, newDescription, selectedImageUri)
-                observePostUpdate()
                 pendingPostUpdate = null
+                observePostUpdate()
             }
         }
 
@@ -117,7 +117,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     }
                     .setNegativeButton("No, keep existing") { _, _ ->
                         postViewModel.updatePost(post.postId, newDescription, null)
-                        observePostUpdate()
                     }
                     .show()
             }
@@ -135,6 +134,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         }
     }
 
+    private fun observePostDeletion() {
+        postViewModel.postSuccessful.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
+                Toast.makeText(requireContext(), "Post deleted successfully", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "Failed to delete post", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun deletePost(post: Post) {
         lifecycleScope.launch {
             val comments = commentViewModel.getCommentsForPost(post.postId)
@@ -143,16 +152,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
             postViewModel.deletePost(post.postId)
             observePostDeletion()
-        }
-    }
-
-    private fun observePostDeletion() {
-        postViewModel.postSuccessful.observe(viewLifecycleOwner) { isSuccess ->
-            if (isSuccess) {
-                Toast.makeText(requireContext(), "Post deleted successfully", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(requireContext(), "Failed to delete post", Toast.LENGTH_SHORT).show()
-            }
         }
     }
 

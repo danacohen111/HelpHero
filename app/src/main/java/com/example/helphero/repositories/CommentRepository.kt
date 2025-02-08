@@ -85,7 +85,7 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
                     return@addSnapshotListener
                 }
 
-                Log.d(TAG, "Received ${snapshot.documentChanges.size} changes from Firestore")  // <-- New log
+                Log.d(TAG, "Received ${snapshot.documentChanges.size} changes from Firestore")
 
                 CoroutineScope(Dispatchers.IO).launch {
                     val updatedComments = mutableListOf<Comment>()
@@ -103,7 +103,7 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
                                     updatedComments.add(comment)
                                 }
                                 DocumentChange.Type.REMOVED -> {
-                                    Log.d(TAG, "Removing comment: $comment")  // <-- New log
+                                    Log.d(TAG, "Removing comment: $comment")
                                     delete(comment)
                                     removedComments.add(comment)
                                 }
@@ -115,7 +115,7 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
 
                     if (updatedComments.isNotEmpty() || removedComments.isNotEmpty()) {
                         val allComments = commentDao.getAll()
-                        Log.d(TAG, "Updated Comments from Room: $allComments")  // <-- New log
+                        Log.d(TAG, "Updated Comments from Room: $allComments")
                         _commentsLiveData.postValue(allComments)
                     }
                 }

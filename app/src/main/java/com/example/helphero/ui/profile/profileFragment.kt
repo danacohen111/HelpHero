@@ -103,7 +103,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             currentUser?.let { user ->
                 val updatedPhone = binding.etPhone.text.toString()
                 val updatedUser = user.copy(phone = updatedPhone, photoUrl = imageUri.toString())
-                profileViewModel.updateUserProfile(updatedUser)
+                profileViewModel.updateUserProfile(updatedUser, imageUri!!)
             } ?: Toast.makeText(requireContext(), "User data not available", Toast.LENGTH_SHORT)
                 .show()
         }

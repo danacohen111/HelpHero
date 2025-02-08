@@ -5,10 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import com.example.helphero.models.User
 import com.example.helphero.repositories.UserRepository
-import kotlinx.coroutines.launch
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
@@ -53,11 +51,6 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
         )
     }
 
-    fun updateUser(user: User, onSuccess: () -> Unit, onError: (String) -> Unit) {
-        viewModelScope.launch {
-            userRepository.updateUser(user, onSuccess, onError)
-        }
-    }
 }
 
 class UserViewModelFactory(private val userRepository: UserRepository) : ViewModelProvider.Factory {

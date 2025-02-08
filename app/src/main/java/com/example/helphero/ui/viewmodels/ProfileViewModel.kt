@@ -31,9 +31,9 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
         })
     }
 
-    fun updateUserProfile(updatedUser: User) {
+    fun updateUserProfile(updatedUser: User, imageUri: Uri) {
         isLoading.value = true
-        userRepository.updateUser(updatedUser,
+        userRepository.updateUser(updatedUser, imageUri,
             onSuccess = {
                 successMessage.value = "Profile updated successfully"
                 isLoading.value = false

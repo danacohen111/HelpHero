@@ -1,7 +1,6 @@
 package com.example.helphero.ui.viewmodels
 
 import android.net.Uri
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.helphero.models.User
@@ -11,6 +10,7 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
     val user = MutableLiveData<User>()
     val errorMessage = MutableLiveData<String>()
     val isLoading = MutableLiveData<Boolean>()
+    val isProfileUpdated = MutableLiveData<Boolean>()
     val successMessage = MutableLiveData<String>()
     private val _imageUri = MutableLiveData<Uri?>()
 
@@ -37,10 +37,12 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
             onSuccess = {
                 successMessage.value = "Profile updated successfully"
                 isLoading.value = false
+                isProfileUpdated.value = true
             },
             onError = { error ->
                 errorMessage.value = error
                 isLoading.value = false
+                isProfileUpdated.value = false
             })
     }
 

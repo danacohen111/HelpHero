@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:ahdroid="http://schemas.android.com/apk/res-auto"
     android:background="#F5F5F5"
     android:padding="16dp">
 
@@ -11,11 +12,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:background="@color/buttonColor"
+        android:background="@drawable/button_circle"
+        ahdroid:backgroundTint="@color/colorPrimary"
         android:padding="8dp"
         android:text="Sign Out"
-        android:layout_marginTop="16dp"
         android:textColor="@android:color/white" />
 
     <!-- Profile Header (Icon + Username) -->
@@ -36,8 +38,7 @@
             android:layout_marginStart="8dp"
             android:src="@drawable/ic_edit"
             android:contentDescription="Edit Profile"
-            android:clickable="true"
-            android:focusable="true" />
+            android:clickable="true" />
 
         <ImageView
             android:layout_width="20dp"
@@ -51,7 +52,8 @@
             android:layout_height="wrap_content"
             android:text="Loading..."
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:focusable="true"/>
     </LinearLayout>
 
     <!-- Profile Card -->
@@ -88,7 +90,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="email"
+            android:text="loading.."
             android:textSize="14sp" />
 
         <TextView
@@ -96,7 +98,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Phone"
+            android:text="loading..."
             android:textSize="14sp"
             android:visibility="visible" />
 
@@ -118,7 +120,8 @@
             android:layout_height="wrap_content"
             android:text="Save Changes"
             android:visibility="gone"
-            android:background="@color/buttonColor"
+            android:background="@drawable/button_circle"
+            ahdroid:backgroundTint="@color/colorPrimary"
             android:layout_marginTop="16dp"/>
 
     </LinearLayout>

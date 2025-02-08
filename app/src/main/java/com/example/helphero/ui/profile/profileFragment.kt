@@ -93,7 +93,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
-
         binding.ivEditProfile.setOnClickListener {
             isEditMode = !isEditMode
             toggleEditMode(isEditMode)
@@ -103,11 +102,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             currentUser?.let { user ->
                 val updatedPhone = binding.etPhone.text.toString()
                 val updatedUser = user.copy(phone = updatedPhone)
-
                 profileViewModel.updateUserProfile(updatedUser)
-                isEditMode = false
-                toggleEditMode(isEditMode)
-                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
             } ?: Toast.makeText(requireContext(), "User data not available", Toast.LENGTH_SHORT)
                 .show()
         }
@@ -115,6 +110,27 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         // Observe error messages
         profileViewModel.errorMessage.observe(viewLifecycleOwner) { error ->
             error?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
+        }
+
+        profileViewModel.isProfileUpdated.observe(viewLifecycleOwner) { success ->
+            if (success) {
+                currentUser?.let { user ->
+                    binding.tvPhone.text = user.phone
+                    binding.etPhone.setText(user.phone)
+                    FirebaseAuth.getInstance().currentUser?.uid?.let {
+                        profileViewModel.fetchUserDetails(
+                            user.userId
+                        )
+                    }
+                    isEditMode = false
+                    toggleEditMode(isEditMode)
+                }
+                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT)
+                    .show()
+            } else {
+                Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
 
         // Fetch user details when fragment is displayed

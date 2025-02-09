@@ -151,7 +151,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                         isEditMode = false
                         toggleEditMode(isEditMode)
                     }
-                    Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, "Failed to update profile", Toast.LENGTH_SHORT).show()
                 }

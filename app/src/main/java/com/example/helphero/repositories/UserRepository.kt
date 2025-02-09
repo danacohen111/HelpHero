@@ -13,6 +13,7 @@ import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -123,6 +124,28 @@ class UserRepository(
         }
     }
 
+    fun listenToUserChanges(userId: String, onUserUpdated: (User) -> Unit): ListenerRegistration {
+        return firestoreDb.collection("users").document(userId)
+            .addSnapshotListener { documentSnapshot, e ->
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    val firestoreUser = documentSnapshot.toObject(FirestoreUser::class.java)
+                    firestoreUser?.let {
+                        val updatedUser = it.toRoomUser(userId)
+                        onUserUpdated(updatedUser)
+                    } ?: run {
+                        Log.w(TAG, "User data is empty or malformed in Firestore.")
+                    }
+                } else {
+                    Log.w(TAG, "No such document in Firestore.")
+                }
+            }
+    }
+
     fun signUp(
         email: String,
         password: String,
@@ -192,45 +215,54 @@ class UserRepository(
 
     fun updateUser(
         user: User,
-        profileImageUri: Uri,
+        profileImageUri: Uri?,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         val userId = user.userId
-        val imageId = "profile_${userId}"
-        Log.d(TAG, "Uploading profile image with imageId: $imageId")
+        val firestoreUser = user.toFirestoreUser()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
-                if (imageUrl != null) {
-                    user.photoUrl = imageUrl.toString()
-                    Log.d(TAG, "Profile image uploaded successfully: $imageUrl")
+                if (profileImageUri != null) {
+                    val imageId = "profile_$userId"
+                    Log.d(TAG, "Uploading profile image with imageId: $imageId")
+                     user.photoUrl.takeIf { it.isNotEmpty() }?.let { oldImageUrl ->
+                            ImageUtil.deleteImage(oldImageUrl)
+                        }
 
-                    val firestoreUser = user.toFirestoreUser()
+                    val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
 
-                    firestoreDb.collection("users").document(userId)
-                        .set(firestoreUser)
-                        .addOnSuccessListener {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                try {
-                                    userDao.update(user) // Update Room database
-                                    withContext(Dispatchers.Main) { onSuccess() }
-                                } catch (e: Exception) {
-                                    withContext(Dispatchers.Main) { onError("Error updating local DB: ${e.message}") }
-                                }
+                    if (imageUrl != null) {
+                        user.photoUrl = imageUrl.toString()
+                        Log.d(TAG, "Profile image uploaded successfully: $imageUrl")
+                    } else {
+                        Log.e(TAG, "Failed to upload image")
+                        onError("Failed to upload image")
+                        return@launch
+                    }
+                }
+
+                // Update Firestore
+                firestoreDb.collection("users").document(userId)
+                    .set(firestoreUser)
+                    .addOnSuccessListener {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                userDao.update(user) // Update Room DB
+                                withContext(Dispatchers.Main) { onSuccess() }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) { onError("Error updating local DB: ${e.message}") }
                             }
                         }
-                        .addOnFailureListener { exception ->
-                            onError("Firestore update failed: ${exception.message}")
-                        }
-                } else {
-                    Log.e(TAG, "Failed to upload image")
-                    onError("Failed to upload image")
-                }
+                    }
+                    .addOnFailureListener { exception ->
+                        onError("Firestore update failed: ${exception.message}")
+                    }
+
             } catch (e: Exception) {
-                Log.e(TAG, "Error uploading image: ${e.message}")
-                onError("Error uploading image: ${e.message}")
+                Log.e(TAG, "Error updating user: ${e.message}")
+                onError("Error updating user: ${e.message}")
             }
         }
     }

@@ -103,6 +103,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 binding.tvEmail.text = user.email
                 binding.tvPhone.text = user.phone
                 binding.etPhone.setText(user.phone)
+                binding.etUsername.setText(user.name)
 
                 if (!user.photoUrl.isNullOrEmpty()) {
                     ImageUtil.loadImage(
@@ -126,9 +127,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
             binding.btnSaveProfile.setOnClickListener {
                 currentUser?.let { user ->
-                    val updatedPhone = binding.etPhone.text.toString()
-                    val updatedUser = user.copy(phone = updatedPhone, photoUrl = imageUri.toString())
-                    profileViewModel.updateUserProfile(updatedUser, imageUri!!)
+                    val updatedUser = user.copy(
+                        name = binding.etUsername.text.toString(),
+                        phone = binding.etPhone.text.toString(),
+                        photoUrl = imageUri?.toString() ?: user.photoUrl
+                    )
+                    profileViewModel.updateUserProfile(updatedUser, imageUri)
                 } ?: Toast.makeText(context, "User data not available", Toast.LENGTH_SHORT).show()
             }
 
@@ -147,7 +151,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                         isEditMode = false
                         toggleEditMode(isEditMode)
                     }
-                    Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, "Failed to update profile", Toast.LENGTH_SHORT).show()
                 }
@@ -243,19 +246,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     private fun toggleEditMode(isEdit: Boolean) {
-        if (isEdit) {
-            binding.tvPhone.visibility = View.GONE
-            binding.etPhone.visibility = View.VISIBLE
-            binding.etPhone.isEnabled = true
-            binding.btnSaveProfile.visibility = View.VISIBLE
-            binding.btnProfileImage.isEnabled = true
-        } else {
-            binding.tvPhone.visibility = View.VISIBLE
-            binding.etPhone.visibility = View.GONE
-            binding.etPhone.isEnabled = false
-            binding.btnSaveProfile.visibility = View.GONE
-            binding.btnProfileImage.isEnabled = false
-        }
+        binding.tvUsername.visibility = if (isEdit) View.GONE else View.VISIBLE
+        binding.etUsername.visibility = if (isEdit) View.VISIBLE else View.GONE
+        binding.etUsername.isEnabled = isEdit
+
+        binding.tvPhone.visibility = if (isEdit) View.GONE else View.VISIBLE
+        binding.etPhone.visibility = if (isEdit) View.VISIBLE else View.GONE
+        binding.etPhone.isEnabled = isEdit
+
+        binding.btnSaveProfile.visibility = if (isEdit) View.VISIBLE else View.GONE
+        binding.btnProfileImage.isEnabled = isEdit
     }
 
     override fun onDestroyView() {

@@ -31,7 +31,7 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
         })
     }
 
-    fun updateUserProfile(updatedUser: User, imageUri: Uri) {
+    fun updateUserProfile(updatedUser: User, imageUri: Uri?) {
         isLoading.value = true
         userRepository.updateUser(updatedUser, imageUri,
             onSuccess = {

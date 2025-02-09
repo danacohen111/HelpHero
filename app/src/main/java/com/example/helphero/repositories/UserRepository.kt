@@ -192,45 +192,50 @@ class UserRepository(
 
     fun updateUser(
         user: User,
-        profileImageUri: Uri,
+        profileImageUri: Uri?,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         val userId = user.userId
-        val imageId = "profile_${userId}"
-        Log.d(TAG, "Uploading profile image with imageId: $imageId")
+        val firestoreUser = user.toFirestoreUser()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
-                if (imageUrl != null) {
-                    user.photoUrl = imageUrl.toString()
-                    Log.d(TAG, "Profile image uploaded successfully: $imageUrl")
+                if (profileImageUri != null) {
+                    val imageId = "profile_$userId"
+                    Log.d(TAG, "Uploading profile image with imageId: $imageId")
 
-                    val firestoreUser = user.toFirestoreUser()
+                    val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
+                    if (imageUrl != null) {
+                        user.photoUrl = imageUrl.toString()
+                        Log.d(TAG, "Profile image uploaded successfully: $imageUrl")
+                    } else {
+                        Log.e(TAG, "Failed to upload image")
+                        onError("Failed to upload image")
+                        return@launch
+                    }
+                }
 
-                    firestoreDb.collection("users").document(userId)
-                        .set(firestoreUser)
-                        .addOnSuccessListener {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                try {
-                                    userDao.update(user) // Update Room database
-                                    withContext(Dispatchers.Main) { onSuccess() }
-                                } catch (e: Exception) {
-                                    withContext(Dispatchers.Main) { onError("Error updating local DB: ${e.message}") }
-                                }
+                // Update Firestore
+                firestoreDb.collection("users").document(userId)
+                    .set(firestoreUser)
+                    .addOnSuccessListener {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                userDao.update(user) // Update Room DB
+                                withContext(Dispatchers.Main) { onSuccess() }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) { onError("Error updating local DB: ${e.message}") }
                             }
                         }
-                        .addOnFailureListener { exception ->
-                            onError("Firestore update failed: ${exception.message}")
-                        }
-                } else {
-                    Log.e(TAG, "Failed to upload image")
-                    onError("Failed to upload image")
-                }
+                    }
+                    .addOnFailureListener { exception ->
+                        onError("Firestore update failed: ${exception.message}")
+                    }
+
             } catch (e: Exception) {
-                Log.e(TAG, "Error uploading image: ${e.message}")
-                onError("Error uploading image: ${e.message}")
+                Log.e(TAG, "Error updating user: ${e.message}")
+                onError("Error updating user: ${e.message}")
             }
         }
     }

@@ -1,34 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:ahdroid="http://schemas.android.com/apk/res-auto"
-    android:background="#F5F5F5"
-    android:padding="16dp">
+    tools:context=".ui.profile.ProfileFragment">
 
-    <!-- Sign Out Button -->
-    <Button
-        android:id="@+id/btnSignOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/button_circle"
-        ahdroid:backgroundTint="@color/colorPrimary"
-        android:padding="8dp"
-        android:text="Sign Out"
-        android:textColor="@android:color/white" />
-
-    <!-- Profile Header (Icon + Username) -->
+    <!-- Profile Header -->
     <LinearLayout
         android:id="@+id/profileHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btnSignOut"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="25dp"
+        android:gravity="center"
         android:orientation="horizontal">
 
         <ImageView
@@ -37,6 +25,7 @@
             android:layout_height="20dp"
             android:layout_marginStart="8dp"
             android:src="@drawable/ic_edit"
+            android:gravity="center"
             android:contentDescription="Edit Profile"
             android:clickable="true" />
 
@@ -45,6 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Loading..."
+            android:gravity="center"
             android:textSize="18sp"
             android:textStyle="bold"
             android:focusable="true"/>
@@ -64,8 +54,9 @@
         android:id="@+id/profileCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/profileHeader"
-        android:layout_centerHorizontal="true"
+        app:layout_constraintTop_toBottomOf="@id/profileHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
         android:background="@android:color/white"
         android:elevation="4dp"
@@ -124,9 +115,45 @@
             android:text="Save Changes"
             android:visibility="gone"
             android:background="@drawable/button_circle"
-            ahdroid:backgroundTint="@color/colorPrimary"
+            android:backgroundTint="@color/colorPrimary"
             android:layout_marginTop="16dp"/>
-
     </LinearLayout>
 
-</RelativeLayout>
+    <!-- RecyclerView for displaying posts -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewUserPosts"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/profileCard"
+        app:layout_constraintBottom_toTopOf="@id/buttonContainer"
+        tools:listitem="@layout/item_post" />
+
+    <!-- Layout for Button -->
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/recyclerViewUserPosts"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="?actionBarSize"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btnSignOut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/button_circle"
+            android:backgroundTint="@color/colorPrimary"
+            android:padding="8dp"
+            android:text="Sign Out"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

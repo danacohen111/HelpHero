@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -51,7 +52,9 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter(viewLifecycleOwner, requireContext())
+        postAdapter = PostAdapter(viewLifecycleOwner, requireContext(),
+            onEditClick = { post -> updatePost(post) },
+            onDeleteClick = { post -> deletePost(post) })
         binding.recyclerViewPosts.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter
@@ -75,6 +78,14 @@ class HomeFragment : Fragment() {
                 binding.textViewEmptyState.visibility = View.VISIBLE
             }
         }
+    }
+
+    private fun updatePost(post: Post) {
+        Toast.makeText(requireContext(), "Go to profile to update post", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun deletePost(post: Post) {
+        Toast.makeText(requireContext(), "Go to profile to delete post", Toast.LENGTH_SHORT).show()
     }
 
     private fun handleWindowInsets() {

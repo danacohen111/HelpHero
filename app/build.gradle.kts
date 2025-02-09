@@ -23,8 +23,9 @@ android {
         buildConfigField("String", "CLOUD_NAME", "\"${project.properties["CLOUD_NAME"] ?: ""}\"")
         buildConfigField("String", "API_KEY", "\"${project.properties["API_KEY"] ?: ""}\"")
         buildConfigField("String", "API_SECRET", "\"${project.properties["API_SECRET"] ?: ""}\"")
+        buildConfigField("String", "CLOUDINARY_BASE_URL", "\"${project.properties["CLOUDINARY_BASE_URL"] ?: ""}\"")
         buildConfigField("String", "NOMINATIM_URL", "\"${project.properties["NOMINATIM_URL"] ?: ""}\"")
-    }
+}
 
     buildTypes {
         release {

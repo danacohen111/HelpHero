@@ -25,7 +25,6 @@
             app:layout_constraintVertical_bias="0.025"
             app:layout_constraintWidth_percent="0.4">
 
-            <!-- Profile Image -->
             <ImageView
                 android:id="@+id/imageViewProfile"
                 android:layout_width="40dp"
@@ -87,6 +86,36 @@
                 app:layout_constraintTop_toTopOf="@id/imageViewPhoneIcon" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Edit and Delete Buttons Layout -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/postInfoLayout"
+            app:layout_constraintEnd_toEndOf="@id/postInfoLayout"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/buttonEditPost"
+                android:layout_width="29dp"
+                android:layout_height="23dp"
+                android:layout_marginEnd="40dp"
+                android:contentDescription="Edit Post"
+                android:background="@drawable/ic_edit_post"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="1.0" />
+
+            <ImageButton
+                android:id="@+id/buttonDeletePost"
+                android:layout_width="29dp"
+                android:layout_height="23dp"
+                android:contentDescription="Delete Post"
+                android:background="@drawable/ic_delete_post"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <!-- Post Info Layout -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/postInfoLayout"
@@ -96,10 +125,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/userInfoLayout"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_bias="0.222"
             app:layout_constraintWidth_percent="0.6">
 
-            <!-- Post Image -->
             <ImageView
                 android:id="@+id/imageViewPostImage"
                 android:layout_width="0dp"
@@ -113,7 +141,6 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:src="@tools:sample/avatars" />
 
-            <!-- Post Caption -->
             <TextView
                 android:id="@+id/textViewPostCaption"
                 android:layout_width="211dp"
@@ -129,21 +156,21 @@
                 app:layout_constraintTop_toBottomOf="@id/imageViewPostImage" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- "I want to help heroes" Button -->
+        <!-- Comment Button -->
         <Button
             android:id="@+id/buttonComments"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
             android:background="@android:color/transparent"
             android:text="I want to help heroes →"
             android:textColor="@android:color/black"
             app:layout_constraintBottom_toTopOf="@id/commentsContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/postInfoLayout"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintVertical_bias="0.098" />
 
-        <!-- Comment Section Container -->
+        <!-- Comments Container (Initially hidden) -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/commentsContainer"
             android:layout_width="0dp"
@@ -184,5 +211,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/buttonAddComment" />
         </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

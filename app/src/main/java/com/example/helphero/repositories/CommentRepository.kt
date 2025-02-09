@@ -59,12 +59,18 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
         commentDao.delete(comment)
     }
 
+    @WorkerThread
+    suspend fun getCommentsForPost(postId: String): List<Comment> {
+        return commentDao.getPostComments(postId)
+    }
+
     init {
         listenForCommentUpdates()
     }
 
     private fun listenForCommentUpdates() {
-        Log.d(TAG, "Listening for comment updates")
+        Log.d(TAG, "Listening for comment updates...")
+
         commentsListenerRegistration?.remove()
         commentsListenerRegistration = firestoreDb.collection(COLLECTION)
             .orderBy("date", Query.Direction.DESCENDING)
@@ -79,6 +85,8 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
                     return@addSnapshotListener
                 }
 
+                Log.d(TAG, "Received ${snapshot.documentChanges.size} changes from Firestore")
+
                 CoroutineScope(Dispatchers.IO).launch {
                     val updatedComments = mutableListOf<Comment>()
                     val removedComments = mutableListOf<Comment>()
@@ -90,10 +98,12 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
 
                             when (change.type) {
                                 DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
-                                    insert(comment) // Only insert if not present
+                                    Log.d(TAG, "Adding/Updating comment: $comment")  // <-- New log
+                                    insert(comment)
                                     updatedComments.add(comment)
                                 }
                                 DocumentChange.Type.REMOVED -> {
+                                    Log.d(TAG, "Removing comment: $comment")
                                     delete(comment)
                                     removedComments.add(comment)
                                 }
@@ -104,11 +114,9 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
                     }
 
                     if (updatedComments.isNotEmpty() || removedComments.isNotEmpty()) {
-                        _commentsLiveData.postValue(commentDao.getAll()) // Refresh Room data
-                        Log.d(
-                            TAG,
-                            "Processed Firestore changes: ${updatedComments.size} added/modified, ${removedComments.size} removed"
-                        )
+                        val allComments = commentDao.getAll()
+                        Log.d(TAG, "Updated Comments from Room: $allComments")
+                        _commentsLiveData.postValue(allComments)
                     }
                 }
             }

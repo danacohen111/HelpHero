@@ -103,6 +103,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 binding.tvEmail.text = user.email
                 binding.tvPhone.text = user.phone
                 binding.etPhone.setText(user.phone)
+                binding.etUsername.setText(user.name)
 
                 if (!user.photoUrl.isNullOrEmpty()) {
                     ImageUtil.loadImage(
@@ -126,15 +127,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
             binding.btnSaveProfile.setOnClickListener {
                 currentUser?.let { user ->
-                    val updatedUser = imageUri?.toString()?.let { it1 ->
-                        user.copy(
-                            name = binding.etUsername.text.toString(),
-                            phone = binding.etPhone.text.toString(),
-                            photoUrl = it1
-                        )
-                    } ?: user.copy(
+                    val updatedUser = user.copy(
                         name = binding.etUsername.text.toString(),
-                        phone = binding.etPhone.text.toString()
+                        phone = binding.etPhone.text.toString(),
+                        photoUrl = imageUri?.toString() ?: user.photoUrl
                     )
                     profileViewModel.updateUserProfile(updatedUser, imageUri)
                 } ?: Toast.makeText(context, "User data not available", Toast.LENGTH_SHORT).show()

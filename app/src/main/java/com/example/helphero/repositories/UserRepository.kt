@@ -204,8 +204,12 @@ class UserRepository(
                 if (profileImageUri != null) {
                     val imageId = "profile_$userId"
                     Log.d(TAG, "Uploading profile image with imageId: $imageId")
+                     user.photoUrl.takeIf { it.isNotEmpty() }?.let { oldImageUrl ->
+                            ImageUtil.deleteImage(oldImageUrl)
+                        }
 
                     val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
+
                     if (imageUrl != null) {
                         user.photoUrl = imageUrl.toString()
                         Log.d(TAG, "Profile image uploaded successfully: $imageUrl")

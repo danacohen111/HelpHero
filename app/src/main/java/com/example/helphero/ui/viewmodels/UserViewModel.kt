@@ -29,8 +29,15 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
                 onSuccess = { fetchedUser ->
                     liveData.postValue(fetchedUser)
                     Log.d(TAG, "Fetched user: ${fetchedUser.name}")
+
+                    userRepository.listenToUserChanges(userId, { updatedUser ->
+                        liveData.postValue(updatedUser)
+                        Log.d(TAG, "User updated in Firestore: ${updatedUser.name}")
+                    })
                 },
-                onError = { error -> Log.d(TAG, "Error fetching user: $error") }
+                onError = { error ->
+                    Log.d(TAG, "Error fetching user: $error")
+                }
             )
         }
         return liveData
@@ -50,7 +57,6 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
             password = "default_password"
         )
     }
-
 }
 
 class UserViewModelFactory(private val userRepository: UserRepository) : ViewModelProvider.Factory {

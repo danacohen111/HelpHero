@@ -13,6 +13,7 @@ import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -121,6 +122,28 @@ class UserRepository(
                 Log.e("UserRepository", "Error saving user to local database: ${e.message}")
             }
         }
+    }
+
+    fun listenToUserChanges(userId: String, onUserUpdated: (User) -> Unit): ListenerRegistration {
+        return firestoreDb.collection("users").document(userId)
+            .addSnapshotListener { documentSnapshot, e ->
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    val firestoreUser = documentSnapshot.toObject(FirestoreUser::class.java)
+                    firestoreUser?.let {
+                        val updatedUser = it.toRoomUser(userId)
+                        onUserUpdated(updatedUser)
+                    } ?: run {
+                        Log.w(TAG, "User data is empty or malformed in Firestore.")
+                    }
+                } else {
+                    Log.w(TAG, "No such document in Firestore.")
+                }
+            }
     }
 
     fun signUp(

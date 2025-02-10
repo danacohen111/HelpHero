@@ -114,7 +114,6 @@
             android:layout_height="wrap_content"
             android:text="Save Changes"
             android:visibility="gone"
-            android:background="@drawable/button_circle"
             android:backgroundTint="@color/colorPrimary"
             android:layout_marginTop="16dp"/>
     </LinearLayout>
@@ -149,7 +148,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/button_circle"
             android:backgroundTint="@color/colorPrimary"
             android:padding="8dp"
             android:text="Sign Out"

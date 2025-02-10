@@ -32,6 +32,7 @@ import com.example.helphero.repositories.CommentRepository
 import com.example.helphero.repositories.UserRepository
 import com.example.helphero.ui.adapters.PostAdapter
 import com.example.helphero.ui.viewmodels.CommentViewModel
+import com.example.helphero.ui.viewmodels.CommentViewModelFactory
 import com.example.helphero.ui.viewmodels.PostViewModel
 import com.example.helphero.ui.viewmodels.ProfileViewModel
 import com.example.helphero.ui.viewmodels.ProfileViewModelFactory
@@ -76,7 +77,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         commentViewModel = ViewModelProvider(
             requireActivity(),
-            CommentViewModel.CommentViewModelFactory(commentRepository)
+            CommentViewModelFactory(commentRepository)
         )[CommentViewModel::class.java]
 
         profileViewModel = ViewModelProvider(

@@ -17,11 +17,12 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.example.helphero.R
+import com.example.helphero.databases.posts.PostDatabase
 import com.example.helphero.databinding.FragmentAddPostBinding
 import com.example.helphero.models.NominatimResponse
 import com.example.helphero.network.RetrofitInstance
 import com.example.helphero.repositories.PostRepository
-import com.example.helphero.databases.posts.PostDatabase
+import com.example.helphero.ui.viewmodels.PostViewModelFactory
 import com.example.helphero.ui.viewmodels.PostViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import retrofit2.Call
@@ -33,16 +34,21 @@ class AddPostFragment : Fragment(R.layout.fragment_add_post) {
     private lateinit var postViewModel: PostViewModel
     private var imageUri: Uri? = null
 
-    private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            imageUri = uri
-            postViewModel.setImageUri(uri)
-            val imageBtn: ImageButton = binding.btnAddImage
-            imageBtn.setImageURI(uri)
-        } else {
-            Toast.makeText(requireContext(), getString(R.string.image_error), Toast.LENGTH_SHORT).show()
+    private val pickImage =
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                imageUri = uri
+                postViewModel.setImageUri(uri)
+                val imageBtn: ImageButton = binding.btnAddImage
+                imageBtn.setImageURI(uri)
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.image_error),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,8 +59,10 @@ class AddPostFragment : Fragment(R.layout.fragment_add_post) {
         val database = PostDatabase.getDatabase(requireContext())
         val postDao = database.postDao()
         val repository = PostRepository(firestoreDb, postDao)
-        val factory = PostViewModel.PostModelFactory(repository)
-        postViewModel = ViewModelProvider(requireActivity(), factory)[PostViewModel::class.java]
+        postViewModel = ViewModelProvider(
+            requireActivity(),
+            PostViewModelFactory(repository)
+        )[PostViewModel::class.java]
 
         binding.btnAddImage.setOnClickListener {
             pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -102,47 +110,57 @@ class AddPostFragment : Fragment(R.layout.fragment_add_post) {
     }
 
     private fun searchLocation(query: String) {
-        RetrofitInstance.api.searchLocation(query).enqueue(object : Callback<List<NominatimResponse>> {
-            override fun onResponse(call: Call<List<NominatimResponse>>, response: Response<List<NominatimResponse>>) {
-                val locations = response.body()
-                if (!locations.isNullOrEmpty()) {
-                    val locationNames = locations.map { it.displayName }.toTypedArray()
+        RetrofitInstance.api.searchLocation(query)
+            .enqueue(object : Callback<List<NominatimResponse>> {
+                override fun onResponse(
+                    call: Call<List<NominatimResponse>>,
+                    response: Response<List<NominatimResponse>>
+                ) {
+                    val locations = response.body()
+                    if (!locations.isNullOrEmpty()) {
+                        val locationNames = locations.map { it.displayName }.toTypedArray()
 
-                    AlertDialog.Builder(requireContext())
-                        .setTitle("Select Location")
-                        .setItems(locationNames) { _, which ->
-                            binding.tvSelectedLocation.text = locationNames[which]
-                        }
-                        .show()
-                } else {
-                    Toast.makeText(requireContext(), "No results found", Toast.LENGTH_SHORT).show()
+                        AlertDialog.Builder(requireContext())
+                            .setTitle("Select Location")
+                            .setItems(locationNames) { _, which ->
+                                binding.tvSelectedLocation.text = locationNames[which]
+                            }
+                            .show()
+                    } else {
+                        Toast.makeText(requireContext(), "No results found", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }
-            }
 
-            override fun onFailure(call: Call<List<NominatimResponse>>, t: Throwable) {
-                Toast.makeText(requireContext(), "Error fetching locations", Toast.LENGTH_SHORT).show()
-            }
-        })
+                override fun onFailure(call: Call<List<NominatimResponse>>, t: Throwable) {
+                    Toast.makeText(requireContext(), "Error fetching locations", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            })
     }
 
     private fun validation(title: String, desc: String, uri: Uri?, location: String): Boolean {
         if (uri == null) {
-            Toast.makeText(requireContext(), getString(R.string.select_img), Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.select_img), Toast.LENGTH_SHORT)
+                .show()
             return false
         }
 
         if (title.isEmpty()) {
-            Toast.makeText(requireContext(), getString(R.string.enter_title), Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.enter_title), Toast.LENGTH_SHORT)
+                .show()
             return false
         }
 
         if (desc.isEmpty()) {
-            Toast.makeText(requireContext(), getString(R.string.enter_desc), Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.enter_desc), Toast.LENGTH_SHORT)
+                .show()
             return false
         }
 
         if (location.equals("Location")) {
-            Toast.makeText(requireContext(), getString(R.string.enter_location), Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.enter_location), Toast.LENGTH_SHORT)
+                .show()
             return false
         }
 

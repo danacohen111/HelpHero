@@ -10,13 +10,13 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.helphero.databinding.FragmentHomeBinding
 import com.example.helphero.databases.posts.PostDatabase
+import com.example.helphero.databinding.FragmentHomeBinding
 import com.example.helphero.models.Post
 import com.example.helphero.repositories.PostRepository
 import com.example.helphero.ui.adapters.PostAdapter
 import com.example.helphero.ui.viewmodels.PostViewModel
-import com.google.firebase.auth.FirebaseAuth
+import com.example.helphero.ui.viewmodels.PostViewModelFactory
 import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment() {
@@ -42,8 +42,10 @@ class HomeFragment : Fragment() {
         val database = PostDatabase.getDatabase(requireContext())
         val postDao = database.postDao()
         val repository = PostRepository(firestoreDb, postDao)
-        val factory = PostViewModel.PostModelFactory(repository)
-        postViewModel = ViewModelProvider(requireActivity(), factory)[PostViewModel::class.java]
+        postViewModel = ViewModelProvider(
+            requireActivity(),
+            PostViewModelFactory(repository)
+        )[PostViewModel::class.java]
 
         setupRecyclerView()
         setupSwipeRefreshLayout()

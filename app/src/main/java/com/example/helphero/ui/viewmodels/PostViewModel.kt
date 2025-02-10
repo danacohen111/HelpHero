@@ -2,7 +2,10 @@ package com.example.helphero.ui.viewmodels
 
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.helphero.models.Post
 import com.example.helphero.repositories.PostRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -10,7 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 class PostViewModel(private val repository: PostRepository) : ViewModel() {
 
@@ -110,14 +115,5 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
             }
         }
     }
-
-    class PostModelFactory(private val repository: PostRepository) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(PostViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return PostViewModel(repository) as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class")
-        }
-    }
+    
 }

@@ -22,7 +22,7 @@ import com.example.helphero.models.User
 import com.example.helphero.repositories.CommentRepository
 import com.example.helphero.repositories.UserRepository
 import com.example.helphero.ui.viewmodels.CommentViewModel
-import com.example.helphero.ui.viewmodels.CommentViewModel.CommentViewModelFactory
+import com.example.helphero.ui.viewmodels.CommentViewModelFactory
 import com.example.helphero.ui.viewmodels.UserViewModel
 import com.example.helphero.ui.viewmodels.UserViewModelFactory
 import com.example.helphero.utils.ImageUtil
@@ -129,7 +129,8 @@ class PostAdapter(
             commentViewModel.commentsLiveData.removeObservers(lifecycleOwner)
             commentViewModel.commentsLiveData.observe(lifecycleOwner) { comments ->
                 val postComments =
-                    comments?.filter { it.postId == post.postId }?.sortedByDescending { it.date } ?: emptyList()
+                    comments?.filter { it.postId == post.postId }?.sortedByDescending { it.date }
+                        ?: emptyList()
                 val commentsAdapter = CommentAdapter(
                     postComments,
                     lifecycleOwner,

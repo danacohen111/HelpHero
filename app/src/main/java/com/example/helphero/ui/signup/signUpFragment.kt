@@ -85,6 +85,11 @@ class SignUpFragment : Fragment() {
         observeViewModel()
     }
 
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.hideNavBar()
+    }
+
     private fun isInputValid(
         name: String,
         password: String,

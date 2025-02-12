@@ -35,7 +35,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     val userPosts: LiveData<List<Post>> get() = _userPosts
 
     init {
-        fetchUserPosts(FirebaseAuth.getInstance().currentUser!!.uid)
+        fetchUserPosts(FirebaseAuth.getInstance().currentUser?.uid ?: "")
     }
 
     fun resetForm() {

@@ -133,7 +133,7 @@ class SignUpFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.signUpSuccess.observe(viewLifecycleOwner, Observer { success ->
             if (success) {
-                findNavController().navigate(R.id.homeFragment)
+                findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
                 Toast.makeText(context, "Sign-up successful!", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(context, "Sign-up failed", Toast.LENGTH_SHORT).show()

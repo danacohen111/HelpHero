@@ -97,8 +97,10 @@ class AddPostFragment : Fragment(R.layout.fragment_add_post) {
             if (isSuccess) {
                 postViewModel.resetForm()
                 imageUri = null
+                binding.etPostName.text.clear()
+                binding.etPostDescription.text.clear()
                 binding.btnAddImage.setImageResource(R.drawable.ic_add_image)
-                Navigation.findNavController(requireView()).navigate(R.id.homeFragment)
+                Navigation.findNavController(requireView()).navigate(R.id.action_addPostFragment_to_homeFragment)
             }
         })
 

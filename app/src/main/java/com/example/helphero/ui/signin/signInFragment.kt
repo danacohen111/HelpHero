@@ -58,13 +58,12 @@ class SignInFragment : Fragment() {
 
         binding.btnSignup.setOnClickListener {
             Toast.makeText(requireContext(), "Navigate to Sign-Up Page", Toast.LENGTH_SHORT).show()
-            findNavController().navigate(R.id.signUpFragment)
+            findNavController().navigate(R.id.action_signInFragment_to_signUpFragment)
         }
     }
 
     private fun setupObservers() {
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
-            // Show/hide a loading indicator
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
@@ -76,7 +75,7 @@ class SignInFragment : Fragment() {
         viewModel.signInSuccess.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(requireContext(), "Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.homeFragment)
+                findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
             }
         }
     }

@@ -20,6 +20,16 @@ class CommentViewModel(private val repository: CommentRepository) : ViewModel() 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> get() = _loading
 
+    init {
+        observeComments()
+    }
+
+    private fun observeComments() {
+        repository.commentsLiveData.observeForever { comments ->
+            Log.d(TAG, "Observed new comments: $comments")
+        }
+    }
+
     fun addComment(comment: Comment) {
         _loading.postValue(true)
         viewModelScope.launch(Dispatchers.IO) {
@@ -63,5 +73,4 @@ class CommentViewModel(private val repository: CommentRepository) : ViewModel() 
             repository.getCommentsForPost(postId)
         }
     }
-
 }

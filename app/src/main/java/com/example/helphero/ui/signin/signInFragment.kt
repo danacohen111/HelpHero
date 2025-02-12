@@ -29,7 +29,6 @@ class SignInFragment : Fragment() {
     ): View {
         _binding = FragmentSignInBinding.inflate(inflater, container, false)
 
-        // Initialize ViewModel with required dependencies
         val userDao = UserDatabase.getDatabase(requireContext()).userDao()
         val userRepository = UserRepository(
             firestoreDb = FirebaseFirestore.getInstance(),
@@ -53,18 +52,29 @@ class SignInFragment : Fragment() {
         binding.btnSignIn.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(
+                    requireContext(),
+                    "Email and Password cannot be empty",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
             viewModel.signIn(email, password)
         }
 
         binding.btnSignup.setOnClickListener {
             Toast.makeText(requireContext(), "Navigate to Sign-Up Page", Toast.LENGTH_SHORT).show()
-            findNavController().navigate(R.id.signUpFragment)
+            findNavController().navigate(R.id.action_signInFragment_to_signUpFragment)
         }
     }
 
     private fun setupObservers() {
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
-            // Show/hide a loading indicator
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.btnSignIn.isEnabled = !isLoading
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
@@ -76,7 +86,9 @@ class SignInFragment : Fragment() {
         viewModel.signInSuccess.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(requireContext(), "Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.homeFragment)
+                if (findNavController().currentDestination?.id == R.id.signInFragment) {
+                    findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.example.helphero.ui.adapters
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -120,20 +121,21 @@ class PostAdapter(
                 isCommentsVisible = !isCommentsVisible
                 binding.commentsContainer.visibility =
                     if (isCommentsVisible) View.VISIBLE else View.GONE
-            }
 
-            commentViewModel.commentsLiveData.removeObservers(lifecycleOwner)
-            commentViewModel.commentsLiveData.observe(lifecycleOwner) { comments ->
-                val postComments =
-                    comments?.filter { it.postId == post.postId }?.sortedByDescending { it.date }
-                        ?: emptyList()
-                val commentsAdapter = CommentAdapter(
-                    postComments,
-                    lifecycleOwner,
-                    UserViewModelFactory(userRepository)
-                )
-                binding.recyclerViewComments.adapter = commentsAdapter
-                binding.recyclerViewComments.layoutManager = LinearLayoutManager(context)
+                commentViewModel.commentsLiveData.observe(lifecycleOwner) { comments ->
+                    val postComments =
+                        comments?.filter { it.postId == post.postId }
+                            ?.sortedByDescending { it.date }
+                            ?: emptyList()
+                    Log.d("PostAdapter", "Comments: $postComments")
+                    val commentsAdapter = CommentAdapter(
+                        postComments,
+                        lifecycleOwner,
+                        UserViewModelFactory(userRepository)
+                    )
+                    binding.recyclerViewComments.adapter = commentsAdapter
+                    binding.recyclerViewComments.layoutManager = LinearLayoutManager(context)
+                }
             }
 
             binding.buttonAddComment.setOnClickListener {

@@ -20,6 +20,7 @@ import com.example.helphero.databinding.FragmentSignUpBinding
 import com.example.helphero.repositories.UserRepository
 import com.example.helphero.ui.viewmodels.SignUpViewModel
 import com.example.helphero.ui.viewmodels.SignUpViewModelFactory
+import com.example.helphero.utils.ImageUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -44,6 +45,7 @@ class SignUpFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        ImageUtil.requestStoragePermission(requireContext(),requireActivity())
         _binding = FragmentSignUpBinding.inflate(inflater, container, false)
         val userDao = UserDatabase.getDatabase(requireContext()).userDao()
         val userRepository = UserRepository(

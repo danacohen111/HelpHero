@@ -1,14 +1,20 @@
 package com.example.helphero.utils
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.UploadCallback
 import com.example.helphero.BuildConfig
+import android.Manifest
 import com.squareup.picasso.Picasso
 import com.example.helphero.R
 import kotlin.coroutines.resume
@@ -18,6 +24,28 @@ import kotlin.coroutines.suspendCoroutine
 class ImageUtil private constructor() {
     companion object {
         private const val TAG = "ImageUtil"
+        private val REQUEST_STORAGE_PERMISSION = 1
+
+        fun requestStoragePermission(context: Context, activity: FragmentActivity) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ),
+                    REQUEST_STORAGE_PERMISSION
+                )
+            }
+        }
 
         fun loadImage(imageUri: Uri?, imageView: ImageView, placeholderResId: Int = R.drawable.applogo) {
             imageView.visibility = View.INVISIBLE

@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.helphero.MainActivity
 import com.example.helphero.ui.viewmodels.SignInViewModel
+import com.example.helphero.utils.ImageUtil
 
 class SignInFragment : Fragment() {
     private var _binding: FragmentSignInBinding? = null

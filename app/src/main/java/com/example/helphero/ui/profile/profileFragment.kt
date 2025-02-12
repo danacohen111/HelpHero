@@ -90,6 +90,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        ImageUtil.requestStoragePermission(requireContext(),requireActivity())
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -179,10 +180,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 FirebaseAuth.getInstance().signOut()
 
                 FirebaseAuth.getInstance().addAuthStateListener { auth ->
-                    if (auth.currentUser == null) {
+                    if (auth.currentUser == null && isAdded) {
                         findNavController().navigate(R.id.signInFragment)
                     }
                 }
+            }
+        }
+
+        FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            if (auth.currentUser == null && isAdded) {
+                findNavController().navigate(R.id.signInFragment)
             }
         }
     }

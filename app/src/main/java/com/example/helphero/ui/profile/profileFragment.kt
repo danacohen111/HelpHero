@@ -177,8 +177,13 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
             binding.btnSignOut.setOnClickListener {
                 FirebaseAuth.getInstance().signOut()
-                Toast.makeText(context, "Signed Out Successfully", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.signInFragment)
+
+                FirebaseAuth.getInstance().addAuthStateListener { auth ->
+                    if (auth.currentUser == null) {
+                        Toast.makeText(context, "Signed Out Successfully", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.signInFragment)
+                    }
+                }
             }
         }
     }

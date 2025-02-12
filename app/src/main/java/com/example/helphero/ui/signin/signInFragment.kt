@@ -8,15 +8,15 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.example.helphero.MainActivity
 import com.example.helphero.R
 import com.example.helphero.databases.users.UserDatabase
 import com.example.helphero.databinding.FragmentSignInBinding
 import com.example.helphero.repositories.UserRepository
+import com.example.helphero.ui.viewmodels.SignInViewModel
 import com.example.helphero.ui.viewmodels.SignInViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.example.helphero.MainActivity
-import com.example.helphero.ui.viewmodels.SignInViewModel
 
 class SignInFragment : Fragment() {
     private var _binding: FragmentSignInBinding? = null
@@ -29,7 +29,6 @@ class SignInFragment : Fragment() {
     ): View {
         _binding = FragmentSignInBinding.inflate(inflater, container, false)
 
-        // Initialize ViewModel with required dependencies
         val userDao = UserDatabase.getDatabase(requireContext()).userDao()
         val userRepository = UserRepository(
             firestoreDb = FirebaseFirestore.getInstance(),
@@ -53,6 +52,16 @@ class SignInFragment : Fragment() {
         binding.btnSignIn.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(
+                    requireContext(),
+                    "Email and Password cannot be empty",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
             viewModel.signIn(email, password)
         }
 
@@ -64,7 +73,8 @@ class SignInFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
-            // Show/hide a loading indicator
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.btnSignIn.isEnabled = !isLoading
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
@@ -76,7 +86,9 @@ class SignInFragment : Fragment() {
         viewModel.signInSuccess.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(requireContext(), "Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.homeFragment)
+                if (findNavController().currentDestination?.id == R.id.signInFragment) {
+                    findNavController().navigate(R.id.homeFragment)
+                }
             }
         }
     }

@@ -63,9 +63,6 @@ class UserRepository(
         }
     }
 
-    /**
-     * Login using Firebase Authentication and fetch user details from Firestore.
-     */
     fun login(email: String, password: String, onError: (String) -> Unit) {
         firestoreAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -74,16 +71,15 @@ class UserRepository(
                     firebaseUser?.let { user ->
                         fetchUserFromFirestore(user.uid, onError)
                     } ?: onError("User not found.")
+                    loginSuccessfull.postValue(true)
                 } else {
                     val errorMessage = task.exception?.message ?: "Sign-in failed"
+                    loginSuccessfull.postValue(false)
                     onError(errorMessage)
                 }
             }
     }
 
-    /**
-     * Fetch the user details from Firestore and save to Room database.
-     */
     private fun fetchUserFromFirestore(userId: String, onError: (String) -> Unit) {
         firestoreDb.collection("users").document(userId).get()
             .addOnSuccessListener { documentSnapshot ->
@@ -94,7 +90,6 @@ class UserRepository(
                         if (firestoreUser != null) {
                             val roomUser = firestoreUser.toRoomUser(userId)
                             saveUserLocally(roomUser)
-                            loginSuccessfull.postValue(true)
                         } else {
                             onError("User data is empty or malformed in Firestore.")
                         }
@@ -111,9 +106,6 @@ class UserRepository(
     }
 
 
-    /**
-     * Save user details to Room database.
-     */
     private fun saveUserLocally(user: User) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -227,9 +219,9 @@ class UserRepository(
                 if (profileImageUri != null) {
                     val imageId = "profile_$userId"
                     Log.d(TAG, "Uploading profile image with imageId: $imageId")
-                     user.photoUrl.takeIf { it.isNotEmpty() }?.let { oldImageUrl ->
-                            ImageUtil.deleteImage(oldImageUrl)
-                        }
+                    user.photoUrl.takeIf { it.isNotEmpty() }?.let { oldImageUrl ->
+                        ImageUtil.deleteImage(oldImageUrl)
+                    }
 
                     val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
 

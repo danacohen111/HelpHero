@@ -54,6 +54,14 @@
         android:background="@color/colorBackground"
         android:layout_marginTop="8dp" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"/>
+
     <!-- Sign In Button -->
     <Button
         android:id="@+id/btnSignIn"

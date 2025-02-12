@@ -29,7 +29,6 @@ class SignInFragment : Fragment() {
     ): View {
         _binding = FragmentSignInBinding.inflate(inflater, container, false)
 
-        // Initialize ViewModel with required dependencies
         val userDao = UserDatabase.getDatabase(requireContext()).userDao()
         val userRepository = UserRepository(
             firestoreDb = FirebaseFirestore.getInstance(),

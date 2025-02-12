@@ -53,6 +53,16 @@ class SignInFragment : Fragment() {
         binding.btnSignIn.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(
+                    requireContext(),
+                    "Email and Password cannot be empty",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
             viewModel.signIn(email, password)
         }
 
@@ -64,6 +74,8 @@ class SignInFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.btnSignIn.isEnabled = !isLoading
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
@@ -75,7 +87,9 @@ class SignInFragment : Fragment() {
         viewModel.signInSuccess.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 Toast.makeText(requireContext(), "Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
+                if (findNavController().currentDestination?.id == R.id.signInFragment) {
+                    findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
+                }
             }
         }
     }

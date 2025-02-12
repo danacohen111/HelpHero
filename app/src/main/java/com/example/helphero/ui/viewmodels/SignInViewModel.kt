@@ -32,15 +32,16 @@ class SignInViewModel(private val userRepository: UserRepository) :
                     _signInSuccess.postValue(false)
                 }
 
-                // If Firebase authentication is successful, save user locally
                 if (userRepository.loginSuccessfull.value == true) {
                     _signInSuccess.postValue(true)
+                    _loading.postValue(false)
                 }
             } catch (e: Exception) {
                 Log.e("SignInViewModel", "Error during sign-in: ${e.message}")
                 _errorMessage.postValue("Error during sign-in: ${e.message}")
                 _signInSuccess.postValue(false)
             } finally {
+                _signInSuccess.postValue(true)
                 _loading.postValue(false)
             }
         }

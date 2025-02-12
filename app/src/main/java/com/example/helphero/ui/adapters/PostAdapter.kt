@@ -121,10 +121,10 @@ class PostAdapter(
 
             // Toggle comments section
             binding.buttonComments.setOnClickListener {
+
                 isCommentsVisible = !isCommentsVisible
                 binding.commentsContainer.visibility =
                     if (isCommentsVisible) View.VISIBLE else View.GONE
-
 
                 commentViewModel.commentsLiveData.observe(lifecycleOwner) { comments ->
                     val postComments =

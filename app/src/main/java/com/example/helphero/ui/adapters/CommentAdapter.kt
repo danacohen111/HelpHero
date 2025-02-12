@@ -43,7 +43,6 @@ class CommentAdapter(
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
 
-        // Observe user data only when binding the view
         userViewModel.getUserById(comment.userId).observe(lifecycleOwner) { user: User? ->
             user?.let {
                 holder.userName.text = it.name

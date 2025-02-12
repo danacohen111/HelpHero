@@ -21,11 +21,9 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
     fun fetchUserDetails(userId: String) {
         isLoading.value = true
         userRepository.get(userId, { fetchedUser ->
-            // On success, update LiveData
             user.value = fetchedUser
             isLoading.value = false
         }, { error ->
-            // On error, update LiveData
             errorMessage.value = error
             isLoading.value = false
         })

@@ -49,10 +49,10 @@ class MainActivity : AppCompatActivity() {
         if (isLoggedIn) {
             Log.d(TAG, "user is logged")
             navController.navigate(R.id.homeFragment)
-            bottomNavigationView.visibility = BottomNavigationView.VISIBLE
+            showNavBar()
         } else {
             navController.navigate(R.id.signInFragment)
-            bottomNavigationView.visibility = BottomNavigationView.GONE
+            hideNavBar()
         }
     }
 
@@ -61,14 +61,17 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.homeFragment)
             true
         }
+
         R.id.profileFragment -> {
             navController.navigate(R.id.profileFragment)
             true
         }
+
         R.id.addPostFragment -> {
             navController.navigate(R.id.addPostFragment)
             true
         }
+
         else -> super.onOptionsItemSelected(item)
     }
 

@@ -18,7 +18,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class CommentRepository(private val firestoreDb: FirebaseFirestore, private val firebaseAuth: FirebaseAuth, private val commentDao: CommentDao) {
+class CommentRepository(
+    private val firestoreDb: FirebaseFirestore,
+    private val firebaseAuth: FirebaseAuth,
+    private val commentDao: CommentDao
+) {
 
     private val TAG = "CommentsRepository"
     private val firebaseDb: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -93,7 +97,8 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
 
                     snapshot.documentChanges.forEach { change ->
                         try {
-                            val firestoreComment = change.document.toObject(FirestoreComment::class.java)
+                            val firestoreComment =
+                                change.document.toObject(FirestoreComment::class.java)
                             val comment = firestoreComment.toRoomComment(change.document.id)
 
                             when (change.type) {
@@ -102,6 +107,7 @@ class CommentRepository(private val firestoreDb: FirebaseFirestore, private val 
                                     insert(comment)
                                     updatedComments.add(comment)
                                 }
+
                                 DocumentChange.Type.REMOVED -> {
                                     Log.d(TAG, "Removing comment: $comment")
                                     delete(comment)

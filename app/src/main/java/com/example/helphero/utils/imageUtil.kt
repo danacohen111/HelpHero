@@ -101,7 +101,6 @@ class ImageUtil private constructor() {
             Log.d(TAG, "Deleting image with id: $imageId")
 
             try {
-                // Ensure the imageId is properly formatted
                 val formattedImageId = "images/$imageId"
                 Log.d(TAG, "Formatted Image ID for deletion: $formattedImageId")
 
@@ -115,7 +114,6 @@ class ImageUtil private constructor() {
                     Log.d(TAG, "Image deleted successfully")
                 }
 
-                // Invalidate the image cache from Picasso
                 val cloudinaryBaseUrl = BuildConfig.CLOUDINARY_BASE_URL
                 val imageUrl = "$cloudinaryBaseUrl/$formattedImageId"
                 Picasso.get().invalidate(imageUrl)

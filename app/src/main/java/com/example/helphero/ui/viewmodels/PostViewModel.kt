@@ -19,8 +19,6 @@ import java.util.UUID
 
 class PostViewModel(private val repository: PostRepository) : ViewModel() {
 
-    private val userId: String = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
-
     val postsLiveData: LiveData<List<Post>> = repository.postsLiveData
 
     private val _postSuccessful = MutableLiveData<Boolean>()
@@ -37,7 +35,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     val userPosts: LiveData<List<Post>> get() = _userPosts
 
     init {
-        fetchUserPosts(userId)
+        fetchUserPosts(FirebaseAuth.getInstance().currentUser?.uid ?: "")
     }
 
     fun resetForm() {
@@ -62,7 +60,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
             try {
                 val post = Post(
                     postId = postId,
-                    userId = userId,
+                    userId = FirebaseAuth.getInstance().currentUser!!.uid,
                     title = title,
                     desc = desc,
                     imageUrl = "",
@@ -73,7 +71,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
                 repository.insertPost(post, imageUri)
                 withContext(Dispatchers.Main) {
                     _postSuccessful.value = true
-                    fetchUserPosts(userId)
+                    fetchUserPosts(FirebaseAuth.getInstance().currentUser!!.uid)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -106,7 +104,7 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
                 repository.deletePost(postId)
                 withContext(Dispatchers.Main) {
                     _postSuccessful.value = true
-                    fetchUserPosts(userId)
+                    fetchUserPosts(FirebaseAuth.getInstance().currentUser!!.uid)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {

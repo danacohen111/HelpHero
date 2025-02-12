@@ -30,7 +30,6 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     private val _imageUri = MutableLiveData<Uri?>()
     val imageUri: LiveData<Uri?> get() = _imageUri
 
-    // Filtered posts for the current user
     private val _userPosts = MutableLiveData<List<Post>>()
     val userPosts: LiveData<List<Post>> get() = _userPosts
 

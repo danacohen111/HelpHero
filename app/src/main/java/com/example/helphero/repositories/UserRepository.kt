@@ -212,7 +212,6 @@ class UserRepository(
         onError: (String) -> Unit
     ) {
         val userId = user.userId
-        val firestoreUser = user.toFirestoreUser()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -223,38 +222,49 @@ class UserRepository(
                         ImageUtil.deleteImage(oldImageUrl)
                     }
 
-                    val imageUrl = ImageUtil.uploadImage(imageId, profileImageUri)
+                val imageUrl = try {
+                    ImageUtil.uploadImage(imageId, profileImageUri)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to upload image", e)
+                    withContext(Dispatchers.Main) { onError("Failed to upload image") }
+                    return@launch
+                }
 
                     if (imageUrl != null) {
                         user.photoUrl = imageUrl.toString()
-                        Log.d(TAG, "Profile image uploaded successfully: $imageUrl")
+                        Log.d(TAG, "Profile image uploaded successfully: ${user.photoUrl}")
                     } else {
                         Log.e(TAG, "Failed to upload image")
                         onError("Failed to upload image")
                         return@launch
                     }
                 }
-
-                // Update Firestore
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating user: ${e.message}")
+                onError("Error updating user: ${e.message}")
+            }
+            finally {
+                val firestoreUser = user.toFirestoreUser()
+                Log.d(TAG, "User data updated: $user")
                 firestoreDb.collection("users").document(userId)
                     .set(firestoreUser)
                     .addOnSuccessListener {
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
+                                Log.d(TAG, "User data updated in Firestore $user")
                                 userDao.update(user) // Update Room DB
                                 withContext(Dispatchers.Main) { onSuccess() }
                             } catch (e: Exception) {
                                 withContext(Dispatchers.Main) { onError("Error updating local DB: ${e.message}") }
+                            }
+                            finally {
+                                Log.d(TAG, "User data updated ${userDao.get(user.userId)}")
                             }
                         }
                     }
                     .addOnFailureListener { exception ->
                         onError("Firestore update failed: ${exception.message}")
                     }
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Error updating user: ${e.message}")
-                onError("Error updating user: ${e.message}")
             }
         }
     }

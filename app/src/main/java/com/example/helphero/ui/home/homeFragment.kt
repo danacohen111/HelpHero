@@ -97,7 +97,7 @@ class HomeFragment : Fragment() {
                 view.paddingLeft,
                 view.paddingTop,
                 view.paddingRight,
-                systemBarInsets.bottom // Add dynamic bottom padding
+                systemBarInsets.bottom
             )
             insets
         }

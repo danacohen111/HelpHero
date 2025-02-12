@@ -89,7 +89,6 @@ class PostAdapter(
         private var isCommentsVisible = false // Track visibility of comments section locally
 
         fun bind(post: Post) {
-            // Load user info
             userViewModel.getUserById(post.userId).observe(lifecycleOwner) { user: User? ->
                 user?.let {
                     binding.textViewUsername.text = it.name
@@ -106,7 +105,6 @@ class PostAdapter(
                 }
             }
 
-            // Load post data
             binding.textViewPostTime.text = post.date
             binding.textViewPostCaption.text = post.desc
             if (post.imageUrl.isNotEmpty()) {
@@ -119,9 +117,7 @@ class PostAdapter(
                 binding.imageViewPostImage.setImageResource(R.drawable.ic_post_placeholder)
             }
 
-            // Toggle comments section
             binding.buttonComments.setOnClickListener {
-
                 isCommentsVisible = !isCommentsVisible
                 binding.commentsContainer.visibility =
                     if (isCommentsVisible) View.VISIBLE else View.GONE
@@ -142,7 +138,6 @@ class PostAdapter(
                 }
             }
 
-            // Add new comment
             binding.buttonAddComment.setOnClickListener {
                 val commentText = binding.editTextAddComment.text.toString().trim()
                 if (commentText.isNotEmpty()) {
@@ -161,17 +156,14 @@ class PostAdapter(
                 }
             }
 
-            // Handle Edit Button Click
             binding.buttonEditPost.setOnClickListener {
                 onEditClick(post)
             }
 
-            // Handle Delete Button Click
             binding.buttonDeletePost.setOnClickListener {
                 onDeleteClick(post)
             }
 
-            // Only show Edit and Delete buttons if the current user is the one who created the post
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
             if (currentUserId == post.userId) {
                 binding.buttonEditPost.visibility = View.VISIBLE

@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.example.helphero.models.User
 import com.example.helphero.repositories.UserRepository
 
@@ -56,15 +55,5 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
             email = "anonymous@example.com",
             password = "default_password"
         )
-    }
-}
-
-class UserViewModelFactory(private val userRepository: UserRepository) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(UserViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return UserViewModel(userRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
